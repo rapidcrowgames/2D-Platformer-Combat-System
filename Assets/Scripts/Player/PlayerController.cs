@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,6 +9,7 @@ public class PlayerController : MonoBehaviour
     //Componentes do PLAYER
     private Rigidbody2D rb; //Meu RigidBody2D
     [SerializeField] private SpriteRenderer visualRenderer; //Pega a sprite do objeto filho do Player
+    [SerializeField] private Animator animator; //Pega o componente Animator do player
 
     //Variáveis de controle
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
@@ -17,7 +19,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region INPUTS
-    
+
     //Movimento
     private void OnMove(InputValue value)
     {
@@ -40,6 +42,73 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region MÁQUINA DE ESTADOS e ENUM
+
+    //Enum
+    enum state
+    {
+        idle,
+        run,
+        jump
+
+    }
+
+    //Maquina de estados SWITCH
+
+    state playerState = state.idle;
+    
+    private void StateMachine()
+    {
+        switch (playerState)
+        {
+            case state.idle:
+                IdleState(); //Vai para o estado de parado
+                break;
+            case state.run:
+                RunState(); //Vai para o estado de movendo
+                break;
+            case state.jump:
+                JumpState(); //Vai para o estado de pulando
+                break;
+
+        }
+    }
+
+
+    //ESTADOS
+
+    private void IdleState() //Parado
+    {
+
+        //Indica que não estou correndo / em movimento
+        animator.SetBool("isRunning", false);
+
+        //SE meu movimento no eixo X for diferente de 0, então vou para o estado de se movendo
+        if (moveInput.x != 0)
+        {
+            playerState = state.run;
+        }
+    }
+
+    private void RunState() //Movendo
+    {
+        //Indica que estou correndo / em movimento
+        animator.SetBool("isRunning", true);
+
+        //SE meu movimento no eixo X ficar parado, então eu vou para o estado de parado
+        if (moveInput.x == 0)
+        {
+            playerState = state.idle;
+        }
+    }
+
+    private void JumpState() //Pulando
+    {
+
+    }
+
+    #endregion
+
     #region MÉTODOS
     #endregion
 
@@ -53,9 +122,10 @@ public class PlayerController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
+    //Em intervalos fixos de tempo Executar lógica relacionada à física.
     private void FixedUpdate()
     {
         //Aplicando ao meu Rb (movimento)
@@ -65,6 +135,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Maquina de estados
+        StateMachine();
+
         #region DEBUGS
         #endregion
     }

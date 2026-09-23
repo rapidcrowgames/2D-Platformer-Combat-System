@@ -255,6 +255,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   visualRenderer: {fileID: 908161728}
+  animator: {fileID: 182938730}
   vel: 5
 --- !u!114 &182938732
 MonoBehaviour:
