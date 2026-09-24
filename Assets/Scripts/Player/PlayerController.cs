@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
     [SerializeField] private float vel; //Minha velocidade de movimento
     private int direction = 1; //Descobre a direção em que o PLAYER está olhando [ Direita == 1 | Esquerda == -1 ]
+    [SerializeField] private float jumpForce; //Força do pulo
+    private bool isGrounded = true; //Controla se estou no chão ou não
 
     #endregion
 
@@ -38,6 +40,23 @@ public class PlayerController : MonoBehaviour
 
         //Atualizo a posição correta da sprite no eixo X
         visualRenderer.flipX = direction == -1;
+    }
+
+    //Pulo
+    private void OnJump(InputValue value)
+    {
+        //SE apertar o botão de pulo
+        if (value.isPressed && isGrounded)
+        {
+            //Ele pula
+            rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
+
+            //Vai para o estado de pulo
+            playerState = state.jump;
+
+            //Não estou no chão mais
+            isGrounded = false;
+        }
     }
 
     #endregion
@@ -80,36 +99,68 @@ public class PlayerController : MonoBehaviour
     private void IdleState() //Parado
     {
 
-        //Indica que não estou correndo / em movimento
+        //Garante que não estou correndo
         animator.SetBool("isRunning", false);
 
         //SE meu movimento no eixo X for diferente de 0, então vou para o estado de se movendo
         if (moveInput.x != 0)
         {
+            //Indica que estou correndo / em movimento
+            animator.SetBool("isRunning", true);
             playerState = state.run;
         }
     }
 
     private void RunState() //Movendo
     {
-        //Indica que estou correndo / em movimento
-        animator.SetBool("isRunning", true);
-
         //SE meu movimento no eixo X ficar parado, então eu vou para o estado de parado
         if (moveInput.x == 0)
         {
+            //Indica que estou parado
+            animator.SetBool("isRunning", false);
             playerState = state.idle;
         }
     }
 
     private void JumpState() //Pulando
     {
+        //Indica que estou pulando
+        animator.SetBool("isJumping", true);
 
+        //SE estou caindo
+        if (!isGrounded && transform.position.y > 0)
+        {
+            //Minha animação é caindo
+            animator.SetBool("isFall", true);
+        }
+
+        //SE estou no chão, eu volto para o estado de parado
+        if (isGrounded)
+        {
+            //Indica que não estou mais pulando e nem caindo, e estou no chão
+            animator.SetBool("isJumping", false);
+            animator.SetBool("isFall", false);
+            playerState = state.idle;
+        }
     }
 
     #endregion
 
     #region MÉTODOS
+    #endregion
+
+    #region COLISÕES
+
+    //Collision
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        //SE colidir com o chão, indica que estou no chão
+        if (other.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
+    }
+
     #endregion
 
     //Awake (Inicia componentes e variáveis necessárias antes do start)
