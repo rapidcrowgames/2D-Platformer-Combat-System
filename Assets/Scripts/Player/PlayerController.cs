@@ -16,7 +16,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float vel; //Minha velocidade de movimento
     private int direction = 1; //Descobre a direção em que o PLAYER está olhando [ Direita == 1 | Esquerda == -1 ]
     [SerializeField] private float jumpForce; //Força do pulo
-    private bool isGrounded = true; //Controla se estou no chão ou não
+    private bool isGrounded = false; //Controla se estou no chão ou não
+    private bool isFalling = false; //Controla se estou caindo
 
     #endregion
 
@@ -68,7 +69,8 @@ public class PlayerController : MonoBehaviour
     {
         idle,
         run,
-        jump
+        jump,
+        fall
 
     }
 
@@ -89,6 +91,9 @@ public class PlayerController : MonoBehaviour
             case state.jump:
                 JumpState(); //Vai para o estado de pulando
                 break;
+            case state.fall:
+                FallState(); //Vai para o estado de caindo / queda livre
+                break;
 
         }
     }
@@ -98,7 +103,6 @@ public class PlayerController : MonoBehaviour
 
     private void IdleState() //Parado
     {
-
         //Garante que não estou correndo
         animator.SetBool("isRunning", false);
 
@@ -114,7 +118,7 @@ public class PlayerController : MonoBehaviour
     private void RunState() //Movendo
     {
         //SE meu movimento no eixo X ficar parado, então eu vou para o estado de parado
-        if (moveInput.x == 0)
+        if (moveInput.x == 0 && isGrounded)
         {
             //Indica que estou parado
             animator.SetBool("isRunning", false);
@@ -126,20 +130,19 @@ public class PlayerController : MonoBehaviour
     {
         //Indica que estou pulando
         animator.SetBool("isJumping", true);
+    }
 
-        //SE estou caindo
-        if (!isGrounded && transform.position.y > 0)
-        {
-            //Minha animação é caindo
-            animator.SetBool("isFall", true);
-        }
+    private void FallState() //Caindo
+    {
+        //Mudo minha animação de queda livre
+        animator.SetBool("isFall", true);
 
-        //SE estou no chão, eu volto para o estado de parado
+        //SE cheguei ao chão, eu não estou mais caindo
         if (isGrounded)
         {
-            //Indica que não estou mais pulando e nem caindo, e estou no chão
-            animator.SetBool("isJumping", false);
+            isFalling = false;
             animator.SetBool("isFall", false);
+            animator.SetBool("isJumping", false);
             playerState = state.idle;
         }
     }
@@ -147,17 +150,40 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region MÉTODOS
+
+    //Verifica se estou em queda livre
+    private void IsFalling()
+    {
+        //SE estou caindo
+        if (!isGrounded && rb.linearVelocity.y < 0 && !isFalling)
+        {
+            //Estou caindo e vou para o estado de queda
+            isFalling = true;
+            playerState = state.fall;
+        }
+    }
+
     #endregion
 
     #region COLISÕES
 
-    //Collision
+    //Collision ENTER
     private void OnCollisionEnter2D(Collision2D other)
     {
         //SE colidir com o chão, indica que estou no chão
         if (other.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+            isFalling = false;
+        }
+    }
+
+    //Collision EXIT
+    private void OnCollisionExit2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
         }
     }
 
@@ -186,10 +212,14 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Verificação de queda livre
+        IsFalling();
+
         //Maquina de estados
         StateMachine();
 
         #region DEBUGS
+
         #endregion
     }
 }
