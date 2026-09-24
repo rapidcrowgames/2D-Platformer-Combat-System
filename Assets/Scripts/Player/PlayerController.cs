@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private SpriteRenderer visualRenderer; //Pega a sprite do objeto filho do Player
     [SerializeField] private Animator animator; //Pega o componente Animator do player
 
+    //============================================================================================
+
     //Variáveis de controle
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
     [SerializeField] private float vel; //Minha velocidade de movimento
@@ -18,6 +20,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpForce; //Força do pulo
     private bool isGrounded = false; //Controla se estou no chão ou não
     private bool isFalling = false; //Controla se estou caindo
+
+    //============================================================================================
+
+    //Variáveis do estado de Dash
+    private float dashDuration = 1f; //Duração do Dash
+    [SerializeField] private float dashSpeed; //Velocidade do Dash
+    private float dashTimer = 1f; //Tempo de reload do Dash
 
     #endregion
 
@@ -60,6 +69,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Dash
+    private void OnSprint(InputValue value)
+    {
+        //SE apertar o botão de DASH
+        if (value.isPressed)
+        {
+            //Vou para o estado do Dash
+            playerState = state.dash;
+        }
+    }
+
     #endregion
 
     #region MÁQUINA DE ESTADOS e ENUM
@@ -70,7 +90,8 @@ public class PlayerController : MonoBehaviour
         idle,
         run,
         jump,
-        fall
+        fall,
+        dash
 
     }
 
@@ -93,6 +114,9 @@ public class PlayerController : MonoBehaviour
                 break;
             case state.fall:
                 FallState(); //Vai para o estado de caindo / queda livre
+                break;
+            case state.dash:
+                DashState(); //Vai para o estado de esquiva / dash
                 break;
 
         }
@@ -144,6 +168,20 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isFall", false);
             animator.SetBool("isJumping", false);
             playerState = state.idle;
+        }
+    }
+
+    private void DashState() //Dash
+    {
+        //Pega a direção do player [ Direita ]
+        if (direction == 1)
+        {
+
+        }
+
+        else if (direction == -1) //[ Esquerda ]
+        {
+
         }
     }
 
@@ -219,6 +257,8 @@ public class PlayerController : MonoBehaviour
         StateMachine();
 
         #region DEBUGS
+
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }
