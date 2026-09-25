@@ -82,7 +82,9 @@ public class PlayerController : MonoBehaviour
         run,
         jump,
         fall,
-        dash
+        dash,
+        lightAttack, 
+        heavyAttack
 
     }
 
@@ -108,6 +110,12 @@ public class PlayerController : MonoBehaviour
                 break;
             case state.dash:
                 DashState(); //Vai para o estado de esquiva / dash
+                break;
+            case state.lightAttack:
+                LightAttackState(); //Vai para o estado de ataque leve
+                break;
+            case state.heavyAttack:
+                HeavyAttackState(); //Vai para o estado de ataque pesado
                 break;
 
         }
@@ -167,6 +175,18 @@ public class PlayerController : MonoBehaviour
     {
 
     }
+
+    private void LightAttackState() //At leve
+    {
+
+    }
+
+    private void HeavyAttackState() //At pesado
+    {
+
+    }
+
+
 
     #endregion
 
