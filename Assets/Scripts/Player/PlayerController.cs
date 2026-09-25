@@ -23,10 +23,6 @@ public class PlayerController : MonoBehaviour
 
     //============================================================================================
 
-    //Variáveis do estado de Dash
-    private float dashDuration = 1f; //Duração do Dash
-    [SerializeField] private float dashSpeed; //Velocidade do Dash
-    private float dashTimer = 1f; //Tempo de reload do Dash
 
     #endregion
 
@@ -72,12 +68,7 @@ public class PlayerController : MonoBehaviour
     //Dash
     private void OnSprint(InputValue value)
     {
-        //SE apertar o botão de DASH
-        if (value.isPressed)
-        {
-            //Vou para o estado do Dash
-            playerState = state.dash;
-        }
+        //Config o Dash aqui depois
     }
 
     #endregion
@@ -169,20 +160,12 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isJumping", false);
             playerState = state.idle;
         }
+        
     }
 
     private void DashState() //Dash
     {
-        //Pega a direção do player [ Direita ]
-        if (direction == 1)
-        {
 
-        }
-
-        else if (direction == -1) //[ Esquerda ]
-        {
-
-        }
     }
 
     #endregion
@@ -243,7 +226,7 @@ public class PlayerController : MonoBehaviour
     //Em intervalos fixos de tempo Executar lógica relacionada à física.
     private void FixedUpdate()
     {
-        //Aplicando ao meu Rb (movimento)
+        //Aplicando ao meu Rb (movimento) SE não estou em DASH
         rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
     }
 
@@ -256,9 +239,11 @@ public class PlayerController : MonoBehaviour
         //Maquina de estados
         StateMachine();
 
-        #region DEBUGS
+        #region SIMPLE TIMERS
 
-        UnityEngine.Debug.Log(playerState);
+        #endregion
+
+        #region DEBUGS
 
         #endregion
     }
