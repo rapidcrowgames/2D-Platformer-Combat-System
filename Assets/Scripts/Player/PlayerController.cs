@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class PlayerController : MonoBehaviour
 {
@@ -22,6 +23,19 @@ public class PlayerController : MonoBehaviour
     private bool isFalling = false; //Controla se estou caindo
 
     //============================================================================================
+
+    //Variáveis do LIGHT ATTACK
+    private int tapButton = 0; //Quantas vezes o botão de ataque foi pressionado
+    private int comboNumber = 0; //Controla em qual golpe do combo estamos [No máximo 2]
+    private float comboFirstPunchTimer = 1.5f; //Timer que pega o tempo da animação do golpe 1 do combo 
+    private float comboSecondPunchTimer = 0.3f; //Timer que pega o tempo da animação do golpe 2 do combo 
+    private bool inLightAttack = false; //Identifica se estamos no ataque leve ou não
+    [SerializeField] private GameObject hitbox; //Pega a Hitbox do player
+    [SerializeField] private Transform hitboxPositionDir; //Pega a posição onde a Hitbox será criada [ Lado direito ]
+    [SerializeField] private Transform hitboxPositionEsq; //Pega a posição onde a Hitbox será criada [ Lado Esquerdo ]
+    private bool hitboxCreated = false; //Identifica se já foi criada a hitbox
+    private bool firstPunchReload = true; //Identifica se o timer do primeiro golpe do combo já foi recarregado
+    private bool secondPunchReload = true; //Identifica se o timer do segundo golpe do combo já foi recarregado
 
 
     #endregion
@@ -69,6 +83,33 @@ public class PlayerController : MonoBehaviour
     private void OnSprint(InputValue value)
     {
         //Config o Dash aqui depois
+    }
+
+    //Ataque leve
+    private void OnAttack(InputValue value)
+    {
+        //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
+        if (value.isPressed && !inLightAttack && tapButton <= 0)
+        {
+            inLightAttack = true;
+
+            //Reproduz a animação 1
+            animator.SetTrigger("inAttack01");
+
+            //Vai para o estado
+            playerState = state.lightAttack;
+
+            tapButton = 1; //Apertei 1x
+        }
+
+        //SE apertei pela SEGUNDA VEZ & já estou no ataque leve
+        if (value.isPressed && inLightAttack && tapButton == 1 && comboNumber == 1)
+        {
+            //Reproduzo a animação 2
+            animator.SetTrigger("inAttack02");
+
+            tapButton = 2; //Apertei 2x
+        }
     }
 
     #endregion
@@ -178,7 +219,56 @@ public class PlayerController : MonoBehaviour
 
     private void LightAttackState() //At leve
     {
+        //SE apertei pela primeira vez & o timer do PRIMEIRO GOLPE está carregado
+        if (tapButton == 1)
+        {
+            //Estou no primeiro golpe do combo
+            comboNumber = 1;
 
+            firstPunchReload = false;
+
+            //Crio a hitbox na minha frente
+            if (direction == 1) // [Direita]
+            {
+                //SE chegou no tempo certo do frame do ataque
+                if (comboFirstPunchTimer <= 1f && !hitboxCreated)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
+
+                    //Criei
+                    hitboxCreated = true;
+
+                    //Depois de um tempo ela se destrói
+                    Destroy(hitboxInst, 0.5f);
+                }
+            }
+            else if (direction == -1 && comboFirstPunchTimer <= 1f) // [Esquerda]
+            {
+                //SE chegou no tempo certo do frame do ataque
+                if (comboFirstPunchTimer <= 1f && !hitboxCreated)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
+
+                    //Criei
+                    hitboxCreated = true;
+
+                    //Depois de um tempo ela se destrói
+                    Destroy(hitboxInst, 0.5f);
+                }
+            }
+        }
+
+        //SE esgotou o tempo do primeiro ataque e eu não apertei para o segundo
+        if (comboFirstPunchTimer <= 0 && comboNumber == 1 && tapButton < 2)
+        {
+            //Eu saio do estado e reseto tudo
+            comboFirstPunchTimer = 1.5f;
+            tapButton = 0;
+            comboNumber = 0;
+            firstPunchReload = true;
+            hitboxCreated = false;
+            inLightAttack = false;
+        }
     }
 
     private void HeavyAttackState() //At pesado
@@ -202,6 +292,16 @@ public class PlayerController : MonoBehaviour
             isFalling = true;
             playerState = state.fall;
         }
+    }
+
+    //Contagem dos timers do combo de ataque leve
+    private void LightAttackComboTimers()
+    {
+        //SE estou no primeiro ataque do combo, diminuo o timer da primeira animação
+        if (comboNumber == 1 && comboFirstPunchTimer > 0) comboFirstPunchTimer -= Time.deltaTime; 
+
+        //SE estou no segundo ataque do combo, diminuo o timer da segunda animação
+        if (comboNumber >= 2 && comboSecondPunchTimer > 0) comboSecondPunchTimer -= Time.deltaTime; 
     }
 
     #endregion
@@ -237,11 +337,13 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
 
     }
+
 
     //Em intervalos fixos de tempo Executar lógica relacionada à física.
     private void FixedUpdate()
@@ -261,9 +363,14 @@ public class PlayerController : MonoBehaviour
 
         #region SIMPLE TIMERS
 
+        //Timer do combo do LIGHT ATTACK
+        LightAttackComboTimers();
+
         #endregion
 
         #region DEBUGS
+
+        UnityEngine.Debug.Log(tapButton);
 
         #endregion
     }
