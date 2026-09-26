@@ -37,6 +37,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform hitboxPositionEsq; //Pega a posição onde a Hitbox será criada [ Lado Esquerdo ]
     private bool hitboxCreated = false; //Identifica se já foi criada a hitbox
 
+    //============================================================================================
+
+    //Variáveis do estado de HEAVY ATTACK
+    private bool inHeavyAttack = false; //Identifica se está no estado de ataque pesado
+
 
     #endregion
 
@@ -66,7 +71,7 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         //SE apertar o botão de pulo
-        if (value.isPressed && isGrounded)
+        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack)
         {
             //Ele pula
             rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
@@ -166,6 +171,8 @@ public class PlayerController : MonoBehaviour
     {
         //Garante que não estou correndo
         animator.SetBool("isRunning", false);
+        animator.SetBool("isJumping", false);
+        animator.SetBool("isFall", false);
 
         //SE meu movimento no eixo X for diferente de 0, então vou para o estado de se movendo
         if (moveInput.x != 0)
@@ -206,7 +213,16 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isJumping", false);
             playerState = state.idle;
         }
-        
+
+        //Quando caio no chão eu reseto o ataque leve e pesado
+        comboSecondPunchTimer = secondPunch;
+        comboFirstPunchTimer = firstPunch;
+        tapButton = 0;
+        comboNumber = 0;
+        vel = 5;
+        hitboxCreated = false;
+        inLightAttack = false;
+
     }
 
     private void DashState() //Dash
@@ -216,6 +232,9 @@ public class PlayerController : MonoBehaviour
 
     private void LightAttackState() //At leve
     {
+        //Quando estou no estado de ataque, minha velocidade diminui
+        vel = 2;
+
         //SE apertei pela primeira vez & o timer do PRIMEIRO GOLPE está carregado
         if (tapButton == 1)
         {
@@ -262,6 +281,8 @@ public class PlayerController : MonoBehaviour
             comboNumber = 0;
             hitboxCreated = false;
             inLightAttack = false;
+            playerState = state.idle;
+            vel = 5;
         }
 
 
@@ -325,6 +346,8 @@ public class PlayerController : MonoBehaviour
                 comboNumber = 0;
                 hitboxCreated = false;
                 inLightAttack = false;
+                vel = 5;
+                playerState = state.idle;
             }
         }
 
@@ -434,7 +457,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(tapButton);
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }
