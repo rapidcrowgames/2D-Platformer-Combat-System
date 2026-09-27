@@ -16,7 +16,9 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis de controle
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
-    [SerializeField] private float vel; //Minha velocidade de movimento
+    private float vel = 0; //Minha velocidade inicial de movimento
+    [SerializeField] private float normalVel; //Define minha velocidade normal de movimento
+    [SerializeField] private float slowVel; //Deixa minha velocidade de movimento mais lenta para usar em outros estados
     private int direction = 1; //Descobre a direção em que o PLAYER está olhando [ Direita == 1 | Esquerda == -1 ]
     [SerializeField] private float jumpForce; //Força do pulo
     private bool isGrounded = false; //Controla se estou no chão ou não
@@ -41,6 +43,7 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis do estado de HEAVY ATTACK
     private bool inHeavyAttack = false; //Identifica se está no estado de ataque pesado
+    private float heavyAnimTimer = 1.2f; //Pega o tempo da animação do ataque pesado
 
 
     #endregion
@@ -94,7 +97,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0)
+        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack)
         {
             inLightAttack = true;
 
@@ -108,9 +111,25 @@ public class PlayerController : MonoBehaviour
         }
 
         //SE apertei pela SEGUNDA VEZ & já estou no ataque leve
-        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 1.3f)
+        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 1.3f && !inHeavyAttack)
         {
             tapButton = 2; //Apertei 2x
+        }
+    }
+
+    //Ataque pesado
+    private void OnHeavyAttack(InputValue value)
+    {
+        //SE apertar o botão de Ataque pesado & não estiver no ar & Não estiver no estado de ataque pesado ainda && Não estiver no ataque leve
+        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack)
+        {
+            //Entrei no ataque pesado
+            inHeavyAttack = true;
+
+            //Reproduz a animação
+            animator.SetTrigger("inHeavyAttack");
+
+            playerState = state.heavyAttack;
         }
     }
 
@@ -219,7 +238,7 @@ public class PlayerController : MonoBehaviour
         comboFirstPunchTimer = firstPunch;
         tapButton = 0;
         comboNumber = 0;
-        vel = 5;
+        vel = normalVel;
         hitboxCreated = false;
         inLightAttack = false;
 
@@ -233,7 +252,7 @@ public class PlayerController : MonoBehaviour
     private void LightAttackState() //At leve
     {
         //Quando estou no estado de ataque, minha velocidade diminui
-        vel = 2;
+        vel = slowVel;
 
         //SE apertei pela primeira vez & o timer do PRIMEIRO GOLPE está carregado
         if (tapButton == 1)
@@ -282,7 +301,7 @@ public class PlayerController : MonoBehaviour
             hitboxCreated = false;
             inLightAttack = false;
             playerState = state.idle;
-            vel = 5;
+            vel = normalVel;
         }
 
 
@@ -346,7 +365,7 @@ public class PlayerController : MonoBehaviour
                 comboNumber = 0;
                 hitboxCreated = false;
                 inLightAttack = false;
-                vel = 5;
+                vel = normalVel;
                 playerState = state.idle;
             }
         }
@@ -356,7 +375,49 @@ public class PlayerController : MonoBehaviour
 
     private void HeavyAttackState() //At pesado
     {
+        //Deixo minha velocidade de movimento mais lenta
+        vel = slowVel;
 
+        //Pego minha direção
+        if (direction == 1) // [ DIREITA ]
+        {
+            if (!hitboxCreated && heavyAnimTimer <= 1f)
+            {
+                //Crio a hitbox na direita
+                GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
+
+                //Criei a hitbox
+                hitboxCreated = true;
+
+                //Destruo ela
+                Destroy(instHitbox, 1f);
+            }
+
+        }
+        else if (direction == -1) // [ ESQUERDA ]
+        {
+            if (!hitboxCreated && heavyAnimTimer <= 1f)
+            {
+                //Crio a hitbox
+                GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
+
+                //Criei a hitbox
+                hitboxCreated = true;
+
+                //Destruo ela
+                Destroy(instHitbox, 1f);
+            }
+        }
+
+        //Quando a animação acabar, eu saio do estado e reseto tudo
+        if (heavyAnimTimer <= 0)
+        {
+            vel = normalVel;
+            hitboxCreated = false;
+            inHeavyAttack = false;
+            heavyAnimTimer = 1.2f;
+            playerState = state.idle;
+        }
     }
 
 
@@ -378,13 +439,16 @@ public class PlayerController : MonoBehaviour
     }
 
     //Contagem dos timers do combo de ataque leve
-    private void LightAttackComboTimers()
+    private void AttackComboTimers()
     {
         //SE estou no primeiro ataque do combo, diminuo o timer da primeira animação
         if (comboNumber == 1 && comboFirstPunchTimer > 0) comboFirstPunchTimer -= Time.deltaTime; 
 
         //SE estou no segundo ataque do combo, diminuo o timer da segunda animação
-        if (comboNumber >= 2 && comboSecondPunchTimer > 0) comboSecondPunchTimer -= Time.deltaTime; 
+        if (comboNumber >= 2 && comboSecondPunchTimer > 0) comboSecondPunchTimer -= Time.deltaTime;
+
+        //SE estou no ataque pesado, diminui o timer da animação
+        if (inHeavyAttack && heavyAnimTimer > 0) heavyAnimTimer -= Time.deltaTime;
     }
 
     #endregion
@@ -419,6 +483,9 @@ public class PlayerController : MonoBehaviour
         //Pegando meu RigidBody2D
         rb = GetComponent<Rigidbody2D>();
 
+        //Minha velocidade
+        vel = normalVel;
+
         //Variáveis de timers
         comboFirstPunchTimer = firstPunch;
         comboSecondPunchTimer = secondPunch;
@@ -451,7 +518,7 @@ public class PlayerController : MonoBehaviour
         #region SIMPLE TIMERS
 
         //Timer do combo do LIGHT ATTACK
-        LightAttackComboTimers();
+        AttackComboTimers();
 
         #endregion
 
