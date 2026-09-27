@@ -49,8 +49,9 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis do estado de DASH
     private bool inDash = false; //Identifica se estou no estado de DASH
-    private float dashVel = 10; //Controla a velocidade do player no DASH
-    private float timerDashDuration = 1f; //Duração do DASH
+    [SerializeField] private float dashVel; //Controla a velocidade do player no DASH
+    [SerializeField] private float timerDashDuration; //Duração do DASH
+    private float timerDashDurationFixed = 0; //Começa em 0, mas ele depois pega o tempo do timer do DASH e armazena
 
 
     #endregion
@@ -60,7 +61,7 @@ public class PlayerController : MonoBehaviour
     //Movimento
     private void OnMove(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+        if (!inDash) moveInput = value.Get<Vector2>();
 
         //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
         if (moveInput.x < 0)
@@ -97,14 +98,20 @@ public class PlayerController : MonoBehaviour
     //Dash
     private void OnSprint(InputValue value)
     {
-        //Estou no Dash
-        inDash = true;
+        if (value.isPressed && timerDashDuration >= timerDashDurationFixed)
+        {
+            //Estou no Dash
+            inDash = true;
 
-        //Animação do Dash
-        animator.SetTrigger("isDash");
+            //Animação do Dash
+            animator.SetTrigger("isDash");
 
-        //Entra no estado do Dash
-        playerState = state.dash;
+            //Altera a velocidade do player para o DASH
+            vel = dashVel;
+
+            //Entra no estado do Dash
+            playerState = state.dash;
+        }
     }
 
     //Ataque leve
@@ -260,20 +267,8 @@ public class PlayerController : MonoBehaviour
 
     private void DashState() //Dash
     {
-        //Altera a velocidade do player para o DASH
-        vel = dashVel;
-
-        //Pega a minha direção
-        if (direction == 1) // [ DIREITA ]
-        {
-            //Dou o DASH
-            rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
-        }
-        else if (direction == -1) // [ ESQUERDA ]
-        {
-            //Dou o DASH
-            rb.linearVelocity = new Vector2(-moveInput.x * vel, rb.linearVelocity.y);
-        }
+        //Pega a minha direção e aplica o DASH
+        rb.linearVelocity = new Vector2(direction * vel, 0f);
 
         //SE estou no ar
         if (!isGrounded)
@@ -473,7 +468,7 @@ public class PlayerController : MonoBehaviour
     private void IsFalling()
     {
         //SE estou caindo
-        if (!isGrounded && rb.linearVelocity.y < 0 && !isFalling)
+        if (!isGrounded && rb.linearVelocity.y < 0 && !isFalling && !inDash)
         {
             //Estou caindo e vou para o estado de queda
             isFalling = true;
@@ -507,7 +502,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Limita o timer entre 0 e 2 
-        timerDashDuration = Mathf.Clamp(timerDashDuration, 0f, 1f);
+        timerDashDuration = Mathf.Clamp(timerDashDuration, 0f, timerDashDurationFixed);
     }
 
     #endregion
@@ -548,6 +543,7 @@ public class PlayerController : MonoBehaviour
         //Variáveis de timers
         comboFirstPunchTimer = firstPunch;
         comboSecondPunchTimer = secondPunch;
+        timerDashDurationFixed = timerDashDuration;
     }
 
 
@@ -562,7 +558,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
-        rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        if (!inDash) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
     }
 
     // Update is called once per frame
@@ -586,7 +582,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(timerDashDuration);
+        UnityEngine.Debug.Log(timerDashDurationFixed);
 
         #endregion
     }

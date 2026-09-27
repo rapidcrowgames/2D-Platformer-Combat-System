@@ -207,6 +207,8 @@ MonoBehaviour:
   hitbox: {fileID: 5938790610190415077, guid: d99d5213b288325418599eba8384e7d0, type: 3}
   hitboxPositionDir: {fileID: 8354152199551598025}
   hitboxPositionEsq: {fileID: 5894188423898205857}
+  dashVel: 25
+  timerDashDuration: 0.3
 --- !u!114 &8171574166778275873
 MonoBehaviour:
   m_ObjectHideFlags: 0
