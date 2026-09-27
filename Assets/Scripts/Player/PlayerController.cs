@@ -381,7 +381,7 @@ public class PlayerController : MonoBehaviour
         //Pego minha direção
         if (direction == 1) // [ DIREITA ]
         {
-            if (!hitboxCreated && heavyAnimTimer <= 1f)
+            if (!hitboxCreated && heavyAnimTimer <= 0.7f)
             {
                 //Crio a hitbox na direita
                 GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
@@ -390,13 +390,13 @@ public class PlayerController : MonoBehaviour
                 hitboxCreated = true;
 
                 //Destruo ela
-                Destroy(instHitbox, 1f);
+                Destroy(instHitbox, 0.8f);
             }
 
         }
         else if (direction == -1) // [ ESQUERDA ]
         {
-            if (!hitboxCreated && heavyAnimTimer <= 1f)
+            if (!hitboxCreated && heavyAnimTimer <= 0.7f)
             {
                 //Crio a hitbox
                 GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
@@ -405,7 +405,7 @@ public class PlayerController : MonoBehaviour
                 hitboxCreated = true;
 
                 //Destruo ela
-                Destroy(instHitbox, 1f);
+                Destroy(instHitbox, 0.8f);
             }
         }
 
