@@ -61,7 +61,9 @@ public class PlayerController : MonoBehaviour
     //Movimento
     private void OnMove(InputValue value)
     {
-        if (!inDash) moveInput = value.Get<Vector2>();
+        moveInput = value.Get<Vector2>();
+
+        if (inDash) return;
 
         //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
         if (moveInput.x < 0)
