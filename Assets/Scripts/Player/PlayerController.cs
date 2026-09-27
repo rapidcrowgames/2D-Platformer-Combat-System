@@ -45,6 +45,13 @@ public class PlayerController : MonoBehaviour
     private bool inHeavyAttack = false; //Identifica se está no estado de ataque pesado
     private float heavyAnimTimer = 1.2f; //Pega o tempo da animação do ataque pesado
 
+    //============================================================================================
+
+    //Variáveis do estado de DASH
+    private bool inDash = false; //Identifica se estou no estado de DASH
+    private float dashVel = 10; //Controla a velocidade do player no DASH
+    private float timerDashDuration = 1f; //Duração do DASH
+
 
     #endregion
 
@@ -90,7 +97,14 @@ public class PlayerController : MonoBehaviour
     //Dash
     private void OnSprint(InputValue value)
     {
-        //Config o Dash aqui depois
+        //Estou no Dash
+        inDash = true;
+
+        //Animação do Dash
+        animator.SetTrigger("isDash");
+
+        //Entra no estado do Dash
+        playerState = state.dash;
     }
 
     //Ataque leve
@@ -246,7 +260,36 @@ public class PlayerController : MonoBehaviour
 
     private void DashState() //Dash
     {
+        //Altera a velocidade do player para o DASH
+        vel = dashVel;
 
+        //Pega a minha direção
+        if (direction == 1) // [ DIREITA ]
+        {
+            //Dou o DASH
+            rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        }
+        else if (direction == -1) // [ ESQUERDA ]
+        {
+            //Dou o DASH
+            rb.linearVelocity = new Vector2(-moveInput.x * vel, rb.linearVelocity.y);
+        }
+
+        //SE estou no ar
+        if (!isGrounded)
+        {
+            //Desligo a gravidade
+            rb.gravityScale = 0f;
+        }
+
+        //SE esgotou o timer, eu saio do estado e reseto tudo
+        if (timerDashDuration <= 0)
+        {
+            vel = normalVel;
+            inDash = false;
+            rb.gravityScale = 1.2f;
+            playerState = state.idle;
+        }
     }
 
     private void LightAttackState() //At leve
@@ -451,6 +494,22 @@ public class PlayerController : MonoBehaviour
         if (inHeavyAttack && heavyAnimTimer > 0) heavyAnimTimer -= Time.deltaTime;
     }
 
+    //Contagem dos timers do DASH
+    private void DashTimers()
+    {
+        //Diminui o timer se estiver no estado de DASH
+        if (inDash) timerDashDuration -= Time.deltaTime;
+
+        //Recarrega a duração do Dash & SE não estiver no ar
+        if (isGrounded && !inDash)
+        {
+            timerDashDuration += Time.deltaTime;
+        }
+
+        //Limita o timer entre 0 e 2 
+        timerDashDuration = Mathf.Clamp(timerDashDuration, 0f, 1f);
+    }
+
     #endregion
 
     #region COLISÕES
@@ -520,11 +579,14 @@ public class PlayerController : MonoBehaviour
         //Timer do combo do LIGHT ATTACK
         AttackComboTimers();
 
+        //Timers do DASH
+        DashTimers();
+
         #endregion
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(playerState);
+        UnityEngine.Debug.Log(timerDashDuration);
 
         #endregion
     }
