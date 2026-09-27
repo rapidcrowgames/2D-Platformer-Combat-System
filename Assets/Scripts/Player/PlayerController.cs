@@ -100,7 +100,8 @@ public class PlayerController : MonoBehaviour
     //Dash
     private void OnSprint(InputValue value)
     {
-        if (value.isPressed && timerDashDuration >= timerDashDurationFixed)
+        //SE apertei o botão e o timer de duração está cheio & Não estou atacando
+        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack)
         {
             //Estou no Dash
             inDash = true;
@@ -120,7 +121,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack)
+        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash)
         {
             inLightAttack = true;
 
@@ -134,7 +135,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //SE apertei pela SEGUNDA VEZ & já estou no ataque leve
-        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 1.3f && !inHeavyAttack)
+        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 1.3f && !inHeavyAttack && !inDash)
         {
             tapButton = 2; //Apertei 2x
         }
@@ -144,7 +145,7 @@ public class PlayerController : MonoBehaviour
     private void OnHeavyAttack(InputValue value)
     {
         //SE apertar o botão de Ataque pesado & não estiver no ar & Não estiver no estado de ataque pesado ainda && Não estiver no ataque leve
-        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack)
+        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash)
         {
             //Entrei no ataque pesado
             inHeavyAttack = true;
