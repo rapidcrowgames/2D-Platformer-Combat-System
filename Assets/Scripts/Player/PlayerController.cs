@@ -31,8 +31,8 @@ public class PlayerController : MonoBehaviour
     private int comboNumber = 0; //Controla em qual golpe do combo estamos [No máximo 2]
     private float comboFirstPunchTimer = 0f; //Timer que pega o tempo da animação do golpe 1 do combo 
     private float comboSecondPunchTimer = 0f; //Timer que pega o tempo da animação do golpe 2 do combo 
-    private float firstPunch = 1.8f; //Tempo para colocar timer do primeiro golpe
-    private float secondPunch = 0.5f; //Tempo para colocar timer do segundo golpe
+    private float firstPunch = 0.4f; //Tempo para colocar timer do primeiro golpe
+    private float secondPunch = 0.4f; //Tempo para colocar timer do segundo golpe
     private bool inLightAttack = false; //Identifica se estamos no ataque leve ou não
     [SerializeField] private GameObject hitbox; //Pega a Hitbox do player
     [SerializeField] private Transform hitboxPositionDir; //Pega a posição onde a Hitbox será criada [ Lado direito ]
@@ -135,7 +135,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //SE apertei pela SEGUNDA VEZ & já estou no ataque leve
-        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 1.3f && !inHeavyAttack && !inDash)
+        if (value.isPressed && inLightAttack && comboNumber == 1 && comboFirstPunchTimer <= 0.3f && !inHeavyAttack && !inDash)
         {
             tapButton = 2; //Apertei 2x
         }
@@ -305,7 +305,7 @@ public class PlayerController : MonoBehaviour
             if (direction == 1) // [Direita]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboFirstPunchTimer <= 1.3f && !hitboxCreated)
+                if (comboFirstPunchTimer <= 0.25f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
 
@@ -319,7 +319,7 @@ public class PlayerController : MonoBehaviour
             else if (direction == -1) // [Esquerda]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboFirstPunchTimer <= 1.3f && !hitboxCreated)
+                if (comboFirstPunchTimer <= 0.25f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
 
@@ -333,7 +333,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //SE esgotou o tempo do primeiro ataque e eu não apertei para o segundo
-        if (comboFirstPunchTimer <= 1 && comboNumber == 1 && tapButton < 2)
+        if (comboFirstPunchTimer <= 0f && comboNumber == 1 && tapButton < 2)
         {
             //Eu saio do estado e reseto tudo
             comboFirstPunchTimer = firstPunch;
@@ -352,7 +352,7 @@ public class PlayerController : MonoBehaviour
 
 
         //SE eu apertei o botão pela 2x & já estava no combo 1 && o tempo da animação 1 acabou
-        if (comboFirstPunchTimer <= 1 && comboNumber == 1 && tapButton >= 2)
+        if (comboFirstPunchTimer <= 0f && comboNumber == 1 && tapButton >= 2)
         {
             comboNumber = 2;
             comboSecondPunchTimer = secondPunch;
@@ -585,7 +585,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(timerDashDurationFixed);
+        UnityEngine.Debug.Log(tapButton);
 
         #endregion
     }
