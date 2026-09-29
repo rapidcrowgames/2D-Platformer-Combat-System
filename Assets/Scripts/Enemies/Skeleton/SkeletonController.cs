@@ -135,7 +135,7 @@ public class SkeletonController : EnemyFather
         }
 
         //SE entrei no raio de detecção, vou para o estado de CHASE
-        if (playerDetected)
+        if (playerDetected && player)
         {
             inAnimation = false;
             inIdleState = false;
@@ -179,7 +179,7 @@ public class SkeletonController : EnemyFather
         }
 
         //SE o player entrou na zona de detecção, vou para o estado de CHASE
-        if (playerDetected)
+        if (playerDetected && player)
         {
             inRunState = false;
             inAnimation = false;
@@ -192,6 +192,16 @@ public class SkeletonController : EnemyFather
 
     private void StateChase()
     {
+        //SE eu não estiver mais no ZAIO de Detecção, eu saio
+        if (!playerDetected)
+        {
+            inChaseState = false;
+            inAnimation = false;
+            enemyState = state.idle;
+
+            return;
+        }
+
         inChaseState = true;
 
         //SE ainda não mudei a animação
@@ -203,10 +213,10 @@ public class SkeletonController : EnemyFather
         }
 
         //Pego a distância até o player
-        float distanceX = transform.position.x - playerTrans.position.x;
+        float distanceX = playerTrans.position.x - transform.position.x;
 
         //A direção que devo ir
-        float direction = Mathf.Sign(distanceX);
+        direction = (int)Mathf.Sign(distanceX);
 
         //Vou na direção do player
         rb.linearVelocity = new Vector2(direction * vel, rb.linearVelocity.y);
@@ -245,6 +255,9 @@ public class SkeletonController : EnemyFather
 
         //Define minha velocidade inicial
         vel = slowVel;
+
+        //Pega o player
+        player = FindFirstObjectByType<PlayerController>();
 
         #region TIMERS CONFIG
 
