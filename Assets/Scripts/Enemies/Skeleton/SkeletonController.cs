@@ -57,6 +57,16 @@ public class SkeletonController : EnemyFather
         if (inLoadAttackState) timerLoadAttack -= Time.deltaTime;
         timerLoadAttack = Mathf.Clamp(timerLoadAttack, 0f, timerLoadFixedAttack);
 
+        //Timers do estado de ATTACK
+        if (inAttackState)
+        {
+            firstAttackTimer -= Time.deltaTime;
+            secondAttackTimer -= Time.deltaTime;
+
+            firstAttackTimer = Mathf.Clamp(firstAttackTimer, 0f, firstAttackFixedTimer);
+            secondAttackTimer = Mathf.Clamp(secondAttackTimer, 0f, secondAttackFixedTimer);
+        }
+
     }
 
     private void CorrectDirection()
@@ -209,6 +219,8 @@ public class SkeletonController : EnemyFather
 
     private void StateChase()
     {
+        vel = chaseVel;
+
         //SE eu não estiver mais no ZAIO de Detecção, eu saio
         if (!playerDetected)
         {
@@ -249,6 +261,9 @@ public class SkeletonController : EnemyFather
     {
         inLoadAttackState = true;
 
+        //Fico parado
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
         //SE o player não existe, eu saio
         if (!player)
         {
@@ -280,6 +295,7 @@ public class SkeletonController : EnemyFather
     private void StateAttack()
     {
         inAttackState = true;
+        vel = slowVel;
 
         //SE ainda não mudei a animação
         if (!inAnimation && comboAttack <= 0)
@@ -302,24 +318,24 @@ public class SkeletonController : EnemyFather
 
             if (direction == 1) // [ DIREITA ]
             {
-                if (!createHitbox && firstAttackTimer <= 0.18)
+                if (!createHitbox && firstAttackTimer <= 0.25)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.1f);
+                    Destroy(hitboxInst, 0.5f);
                 }
             }
             else if (direction == -1) // [ ESQUERDA ]
             {
-                if (!createHitbox && firstAttackTimer <= 0.18)
+                if (!createHitbox && firstAttackTimer <= 0.25)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.1f);
+                    Destroy(hitboxInst, 0.5f);
                 }
             }
 
@@ -330,6 +346,8 @@ public class SkeletonController : EnemyFather
             if (firstAttackTimer <= 0 && attackZone)
             {
                 comboAttack = 2;
+                createHitbox = false;
+                inAnimation = false;
             }
 
             else if (firstAttackTimer <= 0 && !attackZone)
@@ -338,6 +356,8 @@ public class SkeletonController : EnemyFather
                 inAnimation = false;
                 firstAttackTimer = firstAttackFixedTimer;
                 inAttackState = false;
+                createHitbox = false;
+                vel = normalVel;
                 enemyState = state.chase;
             }
         }
@@ -345,6 +365,55 @@ public class SkeletonController : EnemyFather
         /* SE o estou no segundo golpe do combo, eu desfiro um golpe mais forte que
          * afasta o player para mais longe
          */
+
+        if (comboAttack >= 2)
+        {
+
+            //Rodo a segunda animação de ataque
+            if (!inAnimation)
+            {
+                animator.SetTrigger("attack02");
+
+                inAnimation = true;
+            }
+
+
+            if (direction == 1) // [ DIREITA ]
+            {
+                if (!createHitbox && secondAttackTimer <= 0.20)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
+
+                    createHitbox = true;
+
+                    Destroy(hitboxInst, 0.5f);
+                }
+            }
+            else if (direction == -1) // [ ESQUERDA ]
+            {
+                if (!createHitbox && secondAttackTimer <= 0.20)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
+
+                    createHitbox = true;
+
+                    Destroy(hitboxInst, 0.5f);
+                }
+            }
+
+
+            //SE esgotou o timer do segundo ataque, eu volto para o estado de parado
+            if (secondAttackTimer <= 0)
+            {
+                comboAttack = 0;
+                inAnimation = false;
+                firstAttackTimer = firstAttackFixedTimer;
+                inAttackState = false;
+                createHitbox = false;
+                vel = normalVel;
+                enemyState = state.idle;
+            }
+        }
 
     }
 
