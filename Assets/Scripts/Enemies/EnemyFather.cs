@@ -10,6 +10,13 @@ public class EnemyFather : MonoBehaviour
     [SerializeField] protected Animator animator; //Pega o animator
     protected PlayerController player; //Pega o player em cena
 
+    //TRANSFORMS
+    [SerializeField] protected Transform hitboxPosEsq; //Posição esquerda para criar a Hitbox
+    [SerializeField] protected Transform hitboxPosDir; //Posição direita para criar a Hitbox
+
+    //GAME OBJECTS
+    [SerializeField] protected GameObject hitbox; //Hitbox de ataque do inimigo
+
     //Variáveis de controle
     protected float vel = 0f; //Minha velocidade inicial
     protected float normalVel = 2f;

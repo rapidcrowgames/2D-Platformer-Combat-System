@@ -18,7 +18,20 @@ public class SkeletonController : EnemyFather
 
     //Estado de CHASE
     [SerializeField] private Transform playerTrans;
-    private bool inChaseState = false;
+
+    //Estado LOAD ATTACK
+    private float timerLoadAttack = 0f;
+    [SerializeField] private float timerLoadFixedAttack;
+    private bool inLoadAttackState = false;
+
+    //Estado ATTACK
+    private bool inAttackState = false;
+    private int comboAttack = 0;
+    private float firstAttackTimer = 0f;
+    private float secondAttackTimer = 0f;
+    [SerializeField] private float firstAttackFixedTimer;
+    [SerializeField] private float secondAttackFixedTimer;
+    private bool createHitbox = false;
 
     #endregion
 
@@ -39,6 +52,10 @@ public class SkeletonController : EnemyFather
             timerDistance = Mathf.Clamp(timerDistance, 0f, timerFixedDistance);
             timerRunState = Mathf.Clamp(timerRunState, 0f, timerFixedState);
         }
+
+        //Timer do estado LOAD ATTACK
+        if (inLoadAttackState) timerLoadAttack -= Time.deltaTime;
+        timerLoadAttack = Mathf.Clamp(timerLoadAttack, 0f, timerLoadFixedAttack);
 
     }
 
@@ -195,14 +212,11 @@ public class SkeletonController : EnemyFather
         //SE eu não estiver mais no ZAIO de Detecção, eu saio
         if (!playerDetected)
         {
-            inChaseState = false;
             inAnimation = false;
             enemyState = state.idle;
 
             return;
         }
-
-        inChaseState = true;
 
         //SE ainda não mudei a animação
         if (!inAnimation)
@@ -222,16 +236,115 @@ public class SkeletonController : EnemyFather
         rb.linearVelocity = new Vector2(direction * vel, rb.linearVelocity.y);
 
         //SE cheguei próximo demais do player, vou para estado de Load Attack
+        if (attackZone)
+        {
+            inAnimation = false;
+            animator.SetBool("isRunning", false);
+            enemyState = state.loadAttack;
+        }
 
     }
 
     private void StateLoadAttack()
     {
+        inLoadAttackState = true;
 
+        //SE o player não existe, eu saio
+        if (!player)
+        {
+            inLoadAttackState = false;
+            timerLoadAttack = timerLoadFixedAttack;
+            enemyState = state.idle;
+            return;
+        }
+
+        //SE ainda não mudei a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("isLoadAttack");
+
+            inAnimation = true;
+        }
+
+
+        //SE o timer for <= 0 eu vou atacar
+        if (timerLoadAttack <= 0)
+        {
+            inLoadAttackState = false;
+            inAnimation = false;
+            timerLoadAttack = timerLoadFixedAttack;
+            enemyState = state.attack;
+        }
     }
 
     private void StateAttack()
     {
+        inAttackState = true;
+
+        //SE ainda não mudei a animação
+        if (!inAnimation && comboAttack <= 0)
+        {
+            animator.SetTrigger("attack01");
+
+            inAnimation = true;
+        }
+
+
+        if (comboAttack <= 0) comboAttack = 1;
+
+
+
+        /* SE estou no primeiro ataque do combo eu crio a hitbox de acordo com minha
+         * direção e no tempo correto da animação do golpe 1
+        */
+        if (comboAttack == 1)
+        {
+
+            if (direction == 1) // [ DIREITA ]
+            {
+                if (!createHitbox && firstAttackTimer <= 0.18)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
+
+                    createHitbox = true;
+
+                    Destroy(hitboxInst, 0.1f);
+                }
+            }
+            else if (direction == -1) // [ ESQUERDA ]
+            {
+                if (!createHitbox && firstAttackTimer <= 0.18)
+                {
+                    GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
+
+                    createHitbox = true;
+
+                    Destroy(hitboxInst, 0.1f);
+                }
+            }
+
+
+            /* SE o timer da primeira animação chegou ao fim, vou para o próximo combo
+             * SE o player ainda estiver dentro da zona de ataque
+            */
+            if (firstAttackTimer <= 0 && attackZone)
+            {
+                comboAttack = 2;
+            }
+
+            else if (firstAttackTimer <= 0 && !attackZone)
+            {
+                comboAttack = 0;
+                inAnimation = false;
+                firstAttackTimer = firstAttackFixedTimer;
+                inAttackState = false;
+                enemyState = state.chase;
+            }
+        }
+
+        /* SE o estou no segundo golpe do combo, eu desfiro um golpe mais forte que
+         * afasta o player para mais longe
+         */
 
     }
 
