@@ -11,10 +11,12 @@ public class EnemyFather : MonoBehaviour
 
     //Variáveis de controle
     protected float vel = 0f; //Minha velocidade inicial
-    protected float normalVel = 3f;
+    protected float normalVel = 2f;
     protected float slowVel = 1.2f;
-    protected int direction = 1; // [ 1 == DIREITA ] / [ -1 == ESQUERDA ]
+    protected float chaseVel = 3f;
+    [SerializeField] protected int direction = 1; // [ 1 == DIREITA ] / [ -1 == ESQUERDA ]
     [SerializeField] protected bool playerDetected; //Detecta se o player entrou na zona de detecção
+    protected bool inAnimation = false; //Identifica se já está rodando a animação do estado
 
     #endregion
 

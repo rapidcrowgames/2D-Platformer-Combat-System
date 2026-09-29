@@ -585,7 +585,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(tapButton);
+        
 
         #endregion
     }

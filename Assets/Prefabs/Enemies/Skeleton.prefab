@@ -288,7 +288,7 @@ CapsuleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -309,4 +309,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkeletonController
   visualRenderer: {fileID: 335161178350478200}
   animator: {fileID: 2961195626941831409}
+  direction: 1
   playerDetected: 0
+  idleFixedTimer: 2
+  timerFixedDistance: 3
+  timerFixedState: 6
+  playerTrans: {fileID: 1928768015492379525, guid: 6c4f4881066db404796b332ce2fc5dca, type: 3}
