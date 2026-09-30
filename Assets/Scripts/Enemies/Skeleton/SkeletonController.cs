@@ -21,12 +21,13 @@ public class SkeletonController : EnemyFather
     [SerializeField] private float timerLoadFixedAttack;
     private bool inLoadAttackState = false;
 
-    //Estado ATTACK
+    //Estado ATTACK 1 & 2
     private bool inAttackState = false;
+    private bool inAttackState2 = false;
     private int comboAttack = 0;
     private float firstAttackTimer = 0f;
     private float secondAttackTimer = 0f;
-    private float intervalAttackTimer = 0.5f; 
+
     [SerializeField] private float firstAttackFixedTimer;
     [SerializeField] private float secondAttackFixedTimer;
     private bool createHitbox = false;
@@ -41,6 +42,8 @@ public class SkeletonController : EnemyFather
         if (inIdleState) idleTimer -= Time.deltaTime;
         idleTimer = Mathf.Clamp(idleTimer, 0f, idleFixedTimer);
 
+
+
         //Timer do estado RUN
         if (inRunState)
         {
@@ -51,21 +54,22 @@ public class SkeletonController : EnemyFather
             timerRunState = Mathf.Clamp(timerRunState, 0f, timerFixedState);
         }
 
+
+
         //Timer do estado LOAD ATTACK
         if (inLoadAttackState) timerLoadAttack -= Time.deltaTime;
         timerLoadAttack = Mathf.Clamp(timerLoadAttack, 0f, timerLoadFixedAttack);
 
-        //Timers do estado de ATTACK
-        if (inAttackState)
-        {
-            firstAttackTimer -= Time.deltaTime;
-            secondAttackTimer -= Time.deltaTime;
-            if (comboAttack >= 2) intervalAttackTimer -= Time.deltaTime;
 
-            firstAttackTimer = Mathf.Clamp(firstAttackTimer, 0f, firstAttackFixedTimer);
-            secondAttackTimer = Mathf.Clamp(secondAttackTimer, 0f, secondAttackFixedTimer);
-            intervalAttackTimer = Mathf.Clamp(intervalAttackTimer, 0f, 0.5f);
-        }
+
+        //Timers do estado de ATTACK 1 & 2
+        if (inAttackState) firstAttackTimer -= Time.deltaTime;
+        firstAttackTimer = Mathf.Clamp(firstAttackTimer, 0f, firstAttackFixedTimer);
+
+
+        if (inAttackState2) secondAttackTimer -= Time.deltaTime;
+        secondAttackTimer = Mathf.Clamp(secondAttackTimer, 0f, secondAttackFixedTimer);
+
 
     }
 
@@ -91,6 +95,7 @@ public class SkeletonController : EnemyFather
         chase,
         loadAttack,
         attack,
+        attack2,
         hurt,
         die
     }
@@ -116,6 +121,9 @@ public class SkeletonController : EnemyFather
                 break;
             case state.attack:
                 StateAttack();
+                break;
+            case state.attack2:
+                StateAttack2();
                 break;
             case state.hurt:
                 StateHurt();
@@ -259,19 +267,11 @@ public class SkeletonController : EnemyFather
 
     private void StateLoadAttack()
     {
+
         inLoadAttackState = true;
 
         //Fico parado
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-
-        //SE o player não existe, eu saio
-        if (!player)
-        {
-            inLoadAttackState = false;
-            timerLoadAttack = timerLoadFixedAttack;
-            enemyState = state.idle;
-            return;
-        }
 
         //SE ainda não mudei a animação
         if (!inAnimation)
@@ -281,32 +281,32 @@ public class SkeletonController : EnemyFather
             inAnimation = true;
         }
 
-
-        //SE o timer for <= 0 eu vou atacar
+        //Se o tempo de load zerar, eu troco de estado
         if (timerLoadAttack <= 0)
         {
             inLoadAttackState = false;
+            comboAttack = 1;
             inAnimation = false;
             timerLoadAttack = timerLoadFixedAttack;
             enemyState = state.attack;
         }
+
     }
 
     private void StateAttack()
     {
+        
         inAttackState = true;
         vel = slowVel;
 
+
         //SE ainda não mudei a animação
-        if (!inAnimation && comboAttack <= 0)
+        if (!inAnimation)
         {
             animator.SetTrigger("attack01");
 
             inAnimation = true;
         }
-
-
-        if (comboAttack <= 0) comboAttack = 1;
 
 
 
@@ -324,7 +324,7 @@ public class SkeletonController : EnemyFather
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
             else if (direction == -1) // [ ESQUERDA ]
@@ -335,9 +335,11 @@ public class SkeletonController : EnemyFather
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
+
+
 
 
             /* SE o timer da primeira animação chegou ao fim, vou para o próximo combo
@@ -346,38 +348,31 @@ public class SkeletonController : EnemyFather
             if (firstAttackTimer <= 0 && attackZone)
             {
                 comboAttack = 2;
-                createHitbox = false;
-                inAnimation = false;
-            }
-
-            else if (firstAttackTimer <= 0 && !attackZone)
-            {
-                comboAttack = 0;
-                inAnimation = false;
-                firstAttackTimer = firstAttackFixedTimer;
-                intervalAttackTimer = 0.5f;
                 inAttackState = false;
                 createHitbox = false;
-                vel = normalVel;
-                enemyState = state.chase;
+                inAnimation = false;
+                enemyState = state.attack2;
             }
         }
 
-        /* SE o estou no segundo golpe do combo, eu desfiro um golpe mais forte que
-         * afasta o player para mais longe
-         */
+    }
 
-        if (comboAttack >= 2 && intervalAttackTimer <= 0)
+    private void StateAttack2()
+    {
+        inAttackState2 = true;
+        vel = slowVel;
+
+        //SE ainda não mudei de animação
+        if (!inAnimation)
         {
+            // Reproduzo a segunda animação
+            animator.SetTrigger("attack02");
 
-            //Rodo a segunda animação de ataque
-            if (!inAnimation)
-            {
-                animator.SetTrigger("attack02");
+            inAnimation = true;
+        }
 
-                inAnimation = true;
-            }
-
+        if (comboAttack >= 2)
+        {
 
             if (direction == 1) // [ DIREITA ]
             {
@@ -387,7 +382,7 @@ public class SkeletonController : EnemyFather
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
             else if (direction == -1) // [ ESQUERDA ]
@@ -398,9 +393,11 @@ public class SkeletonController : EnemyFather
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
+
+
 
 
             //SE esgotou o timer do segundo ataque, eu volto para o estado de parado
@@ -409,14 +406,13 @@ public class SkeletonController : EnemyFather
                 comboAttack = 0;
                 inAnimation = false;
                 firstAttackTimer = firstAttackFixedTimer;
-                intervalAttackTimer = 0.5f;
+                secondAttackTimer = secondAttackFixedTimer;
                 inAttackState = false;
                 createHitbox = false;
                 vel = normalVel;
                 enemyState = state.idle;
             }
         }
-
     }
 
     private void StateHurt()
@@ -448,6 +444,9 @@ public class SkeletonController : EnemyFather
         idleTimer = idleFixedTimer;
         timerDistance = timerFixedDistance;
         timerRunState = timerFixedState;
+        firstAttackTimer = firstAttackFixedTimer;
+        secondAttackTimer = secondAttackFixedTimer;
+        timerLoadAttack = timerLoadFixedAttack;
 
         #endregion
     }
@@ -481,7 +480,7 @@ public class SkeletonController : EnemyFather
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(intervalAttackTimer);
+        UnityEngine.Debug.Log(enemyState);
 
         #endregion
     }

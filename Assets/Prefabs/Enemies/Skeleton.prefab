@@ -402,8 +402,7 @@ MonoBehaviour:
   idleFixedTimer: 2
   timerFixedDistance: 3
   timerFixedState: 6
-  playerTrans: {fileID: 1928768015492379525, guid: 6c4f4881066db404796b332ce2fc5dca, type: 3}
-  timerLoadFixedAttack: 0.35
+  timerLoadFixedAttack: 1
   firstAttackFixedTimer: 0.3
   secondAttackFixedTimer: 0.3
 --- !u!1 &6862256385036106017
