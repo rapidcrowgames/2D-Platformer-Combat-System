@@ -16,9 +16,6 @@ public class SkeletonController : EnemyFather
     private float timerRunState = 0f;
     [SerializeField] private float timerFixedState;
 
-    //Estado de CHASE
-    [SerializeField] private Transform playerTrans;
-
     //Estado LOAD ATTACK
     private float timerLoadAttack = 0f;
     [SerializeField] private float timerLoadFixedAttack;
@@ -29,6 +26,7 @@ public class SkeletonController : EnemyFather
     private int comboAttack = 0;
     private float firstAttackTimer = 0f;
     private float secondAttackTimer = 0f;
+    private float intervalAttackTimer = 0.5f; 
     [SerializeField] private float firstAttackFixedTimer;
     [SerializeField] private float secondAttackFixedTimer;
     private bool createHitbox = false;
@@ -62,9 +60,11 @@ public class SkeletonController : EnemyFather
         {
             firstAttackTimer -= Time.deltaTime;
             secondAttackTimer -= Time.deltaTime;
+            if (comboAttack >= 2) intervalAttackTimer -= Time.deltaTime;
 
             firstAttackTimer = Mathf.Clamp(firstAttackTimer, 0f, firstAttackFixedTimer);
             secondAttackTimer = Mathf.Clamp(secondAttackTimer, 0f, secondAttackFixedTimer);
+            intervalAttackTimer = Mathf.Clamp(intervalAttackTimer, 0f, 0.5f);
         }
 
     }
@@ -239,7 +239,7 @@ public class SkeletonController : EnemyFather
         }
 
         //Pego a distância até o player
-        float distanceX = playerTrans.position.x - transform.position.x;
+        float distanceX = player.transform.position.x - transform.position.x;
 
         //A direção que devo ir
         direction = (int)Mathf.Sign(distanceX);
@@ -355,6 +355,7 @@ public class SkeletonController : EnemyFather
                 comboAttack = 0;
                 inAnimation = false;
                 firstAttackTimer = firstAttackFixedTimer;
+                intervalAttackTimer = 0.5f;
                 inAttackState = false;
                 createHitbox = false;
                 vel = normalVel;
@@ -366,7 +367,7 @@ public class SkeletonController : EnemyFather
          * afasta o player para mais longe
          */
 
-        if (comboAttack >= 2)
+        if (comboAttack >= 2 && intervalAttackTimer <= 0)
         {
 
             //Rodo a segunda animação de ataque
@@ -408,6 +409,7 @@ public class SkeletonController : EnemyFather
                 comboAttack = 0;
                 inAnimation = false;
                 firstAttackTimer = firstAttackFixedTimer;
+                intervalAttackTimer = 0.5f;
                 inAttackState = false;
                 createHitbox = false;
                 vel = normalVel;
@@ -479,7 +481,7 @@ public class SkeletonController : EnemyFather
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(enemyState);
+        UnityEngine.Debug.Log(intervalAttackTimer);
 
         #endregion
     }
