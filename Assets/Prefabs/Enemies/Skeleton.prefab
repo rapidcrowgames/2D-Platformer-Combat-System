@@ -402,9 +402,9 @@ MonoBehaviour:
   idleFixedTimer: 2
   timerFixedDistance: 3
   timerFixedState: 6
-  timerLoadFixedAttack: 1
-  firstAttackFixedTimer: 0.3
-  secondAttackFixedTimer: 0.3
+  timerLoadFixedAttack: 0.8
+  firstAttackFixedTimer: 0.5
+  secondAttackFixedTimer: 0.7
 --- !u!1 &6862256385036106017
 GameObject:
   m_ObjectHideFlags: 0

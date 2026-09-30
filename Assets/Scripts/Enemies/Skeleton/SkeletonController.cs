@@ -139,7 +139,8 @@ public class SkeletonController : EnemyFather
     private void StateIdle()
     {
         inIdleState = true;
-        
+        inAttackState2 = false;
+
         //SE ainda não rodou a animação
         if (!inAnimation)
         {
@@ -308,7 +309,8 @@ public class SkeletonController : EnemyFather
             inAnimation = true;
         }
 
-
+        //Pego a animação atual que estou usando
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
 
         /* SE estou no primeiro ataque do combo eu crio a hitbox de acordo com minha
          * direção e no tempo correto da animação do golpe 1
@@ -318,7 +320,7 @@ public class SkeletonController : EnemyFather
 
             if (direction == 1) // [ DIREITA ]
             {
-                if (!createHitbox && firstAttackTimer <= 0.25)
+                if (!createHitbox && animState.normalizedTime >= 0.6f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
 
@@ -329,7 +331,7 @@ public class SkeletonController : EnemyFather
             }
             else if (direction == -1) // [ ESQUERDA ]
             {
-                if (!createHitbox && firstAttackTimer <= 0.25)
+                if (!createHitbox && animState.normalizedTime >= 0.6f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
 
@@ -345,14 +347,21 @@ public class SkeletonController : EnemyFather
             /* SE o timer da primeira animação chegou ao fim, vou para o próximo combo
              * SE o player ainda estiver dentro da zona de ataque
             */
-            if (firstAttackTimer <= 0 && attackZone)
+
+            if (animState.IsName("Attack01"))
             {
-                comboAttack = 2;
-                inAttackState = false;
-                createHitbox = false;
-                inAnimation = false;
-                enemyState = state.attack2;
+                //Se a animação terminou
+                if (animState.normalizedTime >= 1f)
+                {
+                    comboAttack = 2;
+                    inAttackState = false;
+                    createHitbox = false;
+                    inAnimation = false;
+                    inAttackState = false;
+                    enemyState = state.attack2;
+                }
             }
+
         }
 
     }
@@ -371,12 +380,16 @@ public class SkeletonController : EnemyFather
             inAnimation = true;
         }
 
+
+        //Pego minha animação atual
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
         if (comboAttack >= 2)
         {
 
             if (direction == 1) // [ DIREITA ]
             {
-                if (!createHitbox && secondAttackTimer <= 0.20)
+                if (!createHitbox && animState.normalizedTime >= 0.6f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
 
@@ -387,7 +400,7 @@ public class SkeletonController : EnemyFather
             }
             else if (direction == -1) // [ ESQUERDA ]
             {
-                if (!createHitbox && secondAttackTimer <= 0.20)
+                if (!createHitbox && animState.normalizedTime >= 0.6f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
 
@@ -400,18 +413,23 @@ public class SkeletonController : EnemyFather
 
 
 
-            //SE esgotou o timer do segundo ataque, eu volto para o estado de parado
-            if (secondAttackTimer <= 0)
+            //SE minha animação acabou, eu volto para o estado de parado
+            if (animState.IsName("Attack02"))
             {
-                comboAttack = 0;
-                inAnimation = false;
-                firstAttackTimer = firstAttackFixedTimer;
-                secondAttackTimer = secondAttackFixedTimer;
-                inAttackState = false;
-                createHitbox = false;
-                vel = normalVel;
-                enemyState = state.idle;
+                if (animState.normalizedTime >= 1f)
+                {
+                    comboAttack = 0;
+                    inAnimation = false;
+                    firstAttackTimer = firstAttackFixedTimer;
+                    secondAttackTimer = secondAttackFixedTimer;
+                    enemyState = state.idle;
+                    inAttackState2 = false;
+                    createHitbox = false;
+                    vel = normalVel;
+                    
+                }
             }
+
         }
     }
 
