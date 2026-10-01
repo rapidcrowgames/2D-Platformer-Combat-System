@@ -25,6 +25,9 @@ public class SkeletonController : EnemyFather
     private int comboAttack = 0;
     private bool createHitbox = false;
 
+    //Método de LIFE UPDATE
+    private bool alive = true; 
+
     #endregion
 
     #region MÉTODOS
@@ -91,6 +94,17 @@ public class SkeletonController : EnemyFather
 
     }
 
+    private void LifeUpdate()
+    {
+        //Verifica minha vida, se chegou a 0 eu vou para o estado de EnterHurt uma vez
+        if (life <= 0 && alive)
+        {
+            EnterHurtState();
+
+            alive = false; //Não estou mais vivo
+        }
+    }
+
 
     #endregion
 
@@ -99,7 +113,7 @@ public class SkeletonController : EnemyFather
     //SE eu colidir com a hitbox do player, eu vou para estado de dano
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("PlayerHitbox") && life >= 0)
+        if (other.CompareTag("PlayerHitbox") && alive)
         {
             EnterHurtState();
         }
@@ -490,6 +504,7 @@ public class SkeletonController : EnemyFather
             if (animState.normalizedTime >= 1f && life <= 0)
             {
                 inAnimation = false;
+                alive = false;
                 enemyState = state.die;
             }
         }

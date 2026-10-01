@@ -530,6 +530,18 @@ public class PlayerController : MonoBehaviour
             {
                 inAnimation = false;
                 inHurtState = false;
+                comboNumber = 0;
+                tapButton = 0;
+                timerDashDuration = timerDashDurationFixed;
+                comboFirstPunchTimer = firstPunch;
+                comboSecondPunchTimer = secondPunch;
+                inDash = false;
+                inHeavyAttack = false;
+                inLightAttack = false;
+                hitboxCreated = false;
+                heavyAnimTimer = 1.2f;
+                vel = normalVel;
+
                 playerState = state.idle;
             }
 
@@ -538,6 +550,17 @@ public class PlayerController : MonoBehaviour
             {
                 inAnimation = false;
                 inHurtState = false;
+                comboNumber = 0;
+                tapButton = 0;
+                timerDashDuration = timerDashDurationFixed;
+                comboFirstPunchTimer = firstPunch;
+                comboSecondPunchTimer = secondPunch;
+                inDash = false;
+                inHeavyAttack = false;
+                inLightAttack = false;
+                hitboxCreated = false;
+                heavyAnimTimer = 1.2f;
+
                 playerState = state.die;
             }
         }
