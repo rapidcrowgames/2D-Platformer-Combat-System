@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     //============================================================================================
 
     //Variáveis de controle
+    private int life = 10;
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
     private float vel = 0; //Minha velocidade inicial de movimento
     [SerializeField] private float normalVel; //Define minha velocidade normal de movimento
@@ -506,6 +507,13 @@ public class PlayerController : MonoBehaviour
 
         //Limita o timer entre 0 e 2 
         timerDashDuration = Mathf.Clamp(timerDashDuration, 0f, timerDashDurationFixed);
+    }
+
+    //Contador de dano
+    public void LifeCount(int life)
+    {
+        //Perco vida
+        this.life -= life;
     }
 
     #endregion

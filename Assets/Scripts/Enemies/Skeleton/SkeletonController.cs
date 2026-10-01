@@ -22,14 +22,7 @@ public class SkeletonController : EnemyFather
     private bool inLoadAttackState = false;
 
     //Estado ATTACK 1 & 2
-    private bool inAttackState = false;
-    private bool inAttackState2 = false;
     private int comboAttack = 0;
-    private float firstAttackTimer = 0f;
-    private float secondAttackTimer = 0f;
-
-    [SerializeField] private float firstAttackFixedTimer;
-    [SerializeField] private float secondAttackFixedTimer;
     private bool createHitbox = false;
 
     #endregion
@@ -59,16 +52,6 @@ public class SkeletonController : EnemyFather
         //Timer do estado LOAD ATTACK
         if (inLoadAttackState) timerLoadAttack -= Time.deltaTime;
         timerLoadAttack = Mathf.Clamp(timerLoadAttack, 0f, timerLoadFixedAttack);
-
-
-
-        //Timers do estado de ATTACK 1 & 2
-        if (inAttackState) firstAttackTimer -= Time.deltaTime;
-        firstAttackTimer = Mathf.Clamp(firstAttackTimer, 0f, firstAttackFixedTimer);
-
-
-        if (inAttackState2) secondAttackTimer -= Time.deltaTime;
-        secondAttackTimer = Mathf.Clamp(secondAttackTimer, 0f, secondAttackFixedTimer);
 
 
     }
@@ -139,7 +122,7 @@ public class SkeletonController : EnemyFather
     private void StateIdle()
     {
         inIdleState = true;
-        inAttackState2 = false;
+        vel = normalVel;
 
         //SE ainda não rodou a animação
         if (!inAnimation)
@@ -183,7 +166,8 @@ public class SkeletonController : EnemyFather
     private void StateRun()
     {
         inRunState = true;
-        
+        vel = normalVel;
+
         //SE ainda não mudei a animação
         if (!inAnimation)
         {
@@ -297,7 +281,6 @@ public class SkeletonController : EnemyFather
     private void StateAttack()
     {
         
-        inAttackState = true;
         vel = slowVel;
 
 
@@ -346,19 +329,26 @@ public class SkeletonController : EnemyFather
 
             /* SE o timer da primeira animação chegou ao fim, vou para o próximo combo
              * SE o player ainda estiver dentro da zona de ataque
+             * SE ele não estiver eu saio do estado e volto para o CHASE
             */
 
             if (animState.IsName("Attack01"))
             {
                 //Se a animação terminou
-                if (animState.normalizedTime >= 1f)
+                if (animState.normalizedTime >= 1f && attackZone)
                 {
                     comboAttack = 2;
-                    inAttackState = false;
                     createHitbox = false;
                     inAnimation = false;
-                    inAttackState = false;
                     enemyState = state.attack2;
+                }
+                else if (animState.normalizedTime >= 1 && !attackZone)
+                {
+                    //Saio do estado
+                    comboAttack = 0;
+                    createHitbox = false;
+                    inAnimation = false;
+                    enemyState = state.chase;
                 }
             }
 
@@ -368,7 +358,6 @@ public class SkeletonController : EnemyFather
 
     private void StateAttack2()
     {
-        inAttackState2 = true;
         vel = slowVel;
 
         //SE ainda não mudei de animação
@@ -378,35 +367,37 @@ public class SkeletonController : EnemyFather
             animator.SetTrigger("attack02");
 
             inAnimation = true;
+
+            return;
         }
 
 
         //Pego minha animação atual
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
 
-        if (comboAttack >= 2)
+        if (comboAttack >= 2 && animState.IsName("Attack02"))
         {
 
             if (direction == 1) // [ DIREITA ]
             {
-                if (!createHitbox && animState.normalizedTime >= 0.6f)
+                if (!createHitbox && animState.normalizedTime >= 0.7f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPosDir.position * direction, Quaternion.identity);
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.2f);
+                    Destroy(hitboxInst, 0.5f);
                 }
             }
             else if (direction == -1) // [ ESQUERDA ]
             {
-                if (!createHitbox && animState.normalizedTime >= 0.6f)
+                if (!createHitbox && animState.normalizedTime >= 0.7f)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPosEsq.position * direction, Quaternion.identity);
 
                     createHitbox = true;
 
-                    Destroy(hitboxInst, 0.2f);
+                    Destroy(hitboxInst, 0.5f);
                 }
             }
 
@@ -414,33 +405,78 @@ public class SkeletonController : EnemyFather
 
 
             //SE minha animação acabou, eu volto para o estado de parado
-            if (animState.IsName("Attack02"))
+            if (animState.normalizedTime >= 1f)
             {
-                if (animState.normalizedTime >= 1f)
-                {
-                    comboAttack = 0;
-                    inAnimation = false;
-                    firstAttackTimer = firstAttackFixedTimer;
-                    secondAttackTimer = secondAttackFixedTimer;
-                    enemyState = state.idle;
-                    inAttackState2 = false;
-                    createHitbox = false;
-                    vel = normalVel;
+                comboAttack = 0;
+                inAnimation = false;
+                enemyState = state.idle;
+                createHitbox = false;
+                vel = normalVel;
                     
-                }
             }
+            
 
         }
     }
 
     private void StateHurt()
     {
+        //SE ainda não mudei a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("hurt");
+
+            inAnimation = true;
+        }
+
+
+        //Pego a animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+
+        //SE a animação chegou ao fim, eu saio do estado
+        if (animState.IsName("Hurt"))
+        {
+            if (animState.normalizedTime >= 1f && life > 0)
+            {
+                inAnimation = false;
+                enemyState = state.idle;
+            }
+
+            //SE acabou a vida, ele vai para o estado de DIE
+            if (animState.normalizedTime >= 1f && life <= 0)
+            {
+                inAnimation = false;
+                enemyState = state.die;
+            }
+        }
 
     }
 
     private void StateDie()
     {
+        //SE ainda não mudei a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("die");
 
+            inAnimation = true;
+        }
+
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+        //Após o fim da animação, eu me destruo
+        if (animState.IsName("Die"))
+        {
+            if (animState.normalizedTime >= 1f)
+            {
+                Destroy(gameObject, 0.5f);
+            }
+        }
     }
 
     #endregion
@@ -462,8 +498,6 @@ public class SkeletonController : EnemyFather
         idleTimer = idleFixedTimer;
         timerDistance = timerFixedDistance;
         timerRunState = timerFixedState;
-        firstAttackTimer = firstAttackFixedTimer;
-        secondAttackTimer = secondAttackFixedTimer;
         timerLoadAttack = timerLoadFixedAttack;
 
         #endregion

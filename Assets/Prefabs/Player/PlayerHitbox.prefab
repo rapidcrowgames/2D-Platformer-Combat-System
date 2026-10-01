@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2605411220786556458}
   - component: {fileID: 51318854052231894}
   - component: {fileID: 3775119264969637792}
+  - component: {fileID: 5016003940419890288}
   m_Layer: 8
   m_Name: PlayerHitbox
   m_TagString: PlayerHitbox
@@ -138,3 +139,25 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &5016003940419890288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5938790610190415077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 438078159044ebc448bbc415b00b6d2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHitboxController
+  visualRenderer: {fileID: 0}
+  animator: {fileID: 0}
+  normalVel: 0
+  slowVel: 0
+  jumpForce: 0
+  hitbox: {fileID: 0}
+  hitboxPositionDir: {fileID: 0}
+  hitboxPositionEsq: {fileID: 0}
+  dashVel: 0
+  timerDashDuration: 0

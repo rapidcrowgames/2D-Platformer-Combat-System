@@ -18,6 +18,7 @@ public class EnemyFather : MonoBehaviour
     [SerializeField] protected GameObject hitbox; //Hitbox de ataque do inimigo
 
     //Variáveis de controle
+    [SerializeField] protected int life; 
     protected float vel = 0f; //Minha velocidade inicial
     protected float normalVel = 2f;
     protected float slowVel = 1.2f;
@@ -40,6 +41,12 @@ public class EnemyFather : MonoBehaviour
     public void SetAttackZone(bool choice)
     {
         attackZone = choice;
+    }
+
+    //Contador da vida
+    public void LifeEnemyCount(int life)
+    {
+        this.life -= life;
     }
 
     #endregion
