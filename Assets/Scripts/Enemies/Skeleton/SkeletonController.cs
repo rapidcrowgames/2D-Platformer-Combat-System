@@ -63,9 +63,48 @@ public class SkeletonController : EnemyFather
 
     }
 
+    private void EnterHurtState()
+    {
+        //Limpo as informações dos estados anteriores
+        inIdleState = false;
+        inRunState = false;
+        inLoadAttackState = false;
+        animator.SetBool("isRunning", false);
+
+        inAnimation = false;
+
+        //Paro os timers
+        timerDistance = timerFixedDistance;
+        idleTimer = idleFixedTimer;
+        timerRunState = timerFixedState;
+        timerLoadAttack = timerLoadFixedAttack;
+
+        comboAttack = 0;
+
+        //Paro o movimento
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
+        createHitbox = false;
+
+        //Vou para estado de Dano
+        enemyState = state.hurt;
+
+    }
+
+
     #endregion
 
     #region COLISÕES
+
+    //SE eu colidir com a hitbox do player, eu vou para estado de dano
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("PlayerHitbox") && life >= 0)
+        {
+            EnterHurtState();
+        }
+    }
+
     #endregion
 
     #region MÁQUINA DE ESTADOS e ENUM
@@ -421,6 +460,9 @@ public class SkeletonController : EnemyFather
 
     private void StateHurt()
     {
+        //Zero a velocidade
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        
         //SE ainda não mudei a animação
         if (!inAnimation)
         {
@@ -456,6 +498,9 @@ public class SkeletonController : EnemyFather
 
     private void StateDie()
     {
+        //Zero a velocidade
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
         //SE ainda não mudei a animação
         if (!inAnimation)
         {
@@ -531,8 +576,6 @@ public class SkeletonController : EnemyFather
         #endregion
 
         #region DEBUGS
-
-        UnityEngine.Debug.Log(enemyState);
 
         #endregion
     }

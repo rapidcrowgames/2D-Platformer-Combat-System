@@ -396,6 +396,7 @@ MonoBehaviour:
   hitboxPosEsq: {fileID: 1402808202815125741}
   hitboxPosDir: {fileID: 8415234643112359087}
   hitbox: {fileID: 1770326843994680741, guid: b9905628b92e8264b9f832e92fd458e5, type: 3}
+  life: 3
   direction: 1
   playerDetected: 0
   attackZone: 0

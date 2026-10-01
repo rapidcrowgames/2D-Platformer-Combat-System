@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpForce; //Força do pulo
     private bool isGrounded = false; //Controla se estou no chão ou não
     private bool isFalling = false; //Controla se estou caindo
+    private bool inAnimation = false; //Controla se estou em alguma animação controlada por estado e não Input
 
     //============================================================================================
 
@@ -39,12 +40,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform hitboxPositionDir; //Pega a posição onde a Hitbox será criada [ Lado direito ]
     [SerializeField] private Transform hitboxPositionEsq; //Pega a posição onde a Hitbox será criada [ Lado Esquerdo ]
     private bool hitboxCreated = false; //Identifica se já foi criada a hitbox
+    private int lightDamage = 1;
 
     //============================================================================================
 
     //Variáveis do estado de HEAVY ATTACK
     private bool inHeavyAttack = false; //Identifica se está no estado de ataque pesado
     private float heavyAnimTimer = 1.2f; //Pega o tempo da animação do ataque pesado
+    private int heavyDamage = 3;
 
     //============================================================================================
 
@@ -53,6 +56,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashVel; //Controla a velocidade do player no DASH
     [SerializeField] private float timerDashDuration; //Duração do DASH
     private float timerDashDurationFixed = 0; //Começa em 0, mas ele depois pega o tempo do timer do DASH e armazena
+
+    //===========================================================================================
+
+    //Variáveis do estado HURT
+    private bool inHurtState = false;
+
+    //==========================================================================================
+
+    //Variáveis do estado de Death
+    private bool inDieState = false;
 
 
     #endregion
@@ -171,7 +184,9 @@ public class PlayerController : MonoBehaviour
         fall,
         dash,
         lightAttack, 
-        heavyAttack
+        heavyAttack,
+        hurt,
+        die
 
     }
 
@@ -203,6 +218,12 @@ public class PlayerController : MonoBehaviour
                 break;
             case state.heavyAttack:
                 HeavyAttackState(); //Vai para o estado de ataque pesado
+                break;
+            case state.hurt:
+                HurtState(); //Vair para o estado de machucado
+                break;
+            case state.die:
+                DieState(); //Vai para o estado de morto
                 break;
 
         }
@@ -313,6 +334,10 @@ public class PlayerController : MonoBehaviour
                     //Criei
                     hitboxCreated = true;
 
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = hitboxInst.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(lightDamage);
+
                     //Depois de um tempo ela se destrói
                     Destroy(hitboxInst, 0.5f);
                 }
@@ -326,6 +351,10 @@ public class PlayerController : MonoBehaviour
 
                     //Criei
                     hitboxCreated = true;
+
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = hitboxInst.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(lightDamage);
 
                     //Depois de um tempo ela se destrói
                     Destroy(hitboxInst, 0.5f);
@@ -377,6 +406,10 @@ public class PlayerController : MonoBehaviour
                     //Criei
                     hitboxCreated = true;
 
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = hitboxInst.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(lightDamage);
+
                     //Depois de um tempo ela se destrói
                     Destroy(hitboxInst, 0.2f);
                 }
@@ -390,6 +423,10 @@ public class PlayerController : MonoBehaviour
 
                     //Criei
                     hitboxCreated = true;
+
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = hitboxInst.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(lightDamage);
 
                     //Depois de um tempo ela se destrói
                     Destroy(hitboxInst, 0.2f);
@@ -431,6 +468,10 @@ public class PlayerController : MonoBehaviour
                 //Criei a hitbox
                 hitboxCreated = true;
 
+                //Altero o dano da Hitbox
+                PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                hitboxController.SetDamage(heavyDamage);
+
                 //Destruo ela
                 Destroy(instHitbox, 0.8f);
             }
@@ -446,6 +487,10 @@ public class PlayerController : MonoBehaviour
                 //Criei a hitbox
                 hitboxCreated = true;
 
+                //Altero o dano da Hitbox
+                PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                hitboxController.SetDamage(heavyDamage);
+
                 //Destruo ela
                 Destroy(instHitbox, 0.8f);
             }
@@ -459,6 +504,70 @@ public class PlayerController : MonoBehaviour
             inHeavyAttack = false;
             heavyAnimTimer = 1.2f;
             playerState = state.idle;
+        }
+    }
+
+    private void HurtState() //Machucado / sofrendo dano
+    {
+        inHurtState = true;
+        
+        //SE ainda não mudei a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("hurt");
+
+            inAnimation = true;
+        }
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+        //SE no fim da minha animação de dano, eu saio do estado
+        if (animState.IsName("Hurt"))
+        {
+            if (animState.normalizedTime >= 1f && life > 0)
+            {
+                inAnimation = false;
+                inHurtState = false;
+                playerState = state.idle;
+            }
+
+            //SE eu morrer
+            if (animState.normalizedTime >= 1f && life <= 0)
+            {
+                inAnimation = false;
+                inHurtState = false;
+                playerState = state.die;
+            }
+        }
+        
+    }
+
+    private void DieState() //Morto
+    {
+        inDieState = true;
+
+        //SE eu ainda não mudei a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("die");
+
+            inAnimation = true;
+        }
+
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+        //SE minha animação chegou ao fim eu me destruo
+        if (animState.IsName("Die"))
+        {
+            if (animState.normalizedTime >= 1f)
+            {
+                Destroy(gameObject, 1f);
+            }
         }
     }
 
@@ -510,10 +619,44 @@ public class PlayerController : MonoBehaviour
     }
 
     //Contador de dano
-    public void LifeCount(int life)
+    public void LifeCount(int lifeValue)
     {
         //Perco vida
-        this.life -= life;
+        life -= lifeValue;
+    }
+
+    //Pega a variável de vida do player
+    public bool PlayerIsAlive()
+    {
+        return life > 0;
+    }
+
+    //Prepara para entrar no estado de Hurt
+    public void EnterHurtState()
+    {
+        //Limpo as informações
+        comboNumber = 0;
+        tapButton = 0;
+        timerDashDuration = timerDashDurationFixed;
+        comboFirstPunchTimer = firstPunch;
+        comboSecondPunchTimer = secondPunch;
+        inAnimation = false;
+        inDash = false;
+        inHeavyAttack = false;
+        inLightAttack = false;
+        hitboxCreated = false;
+        heavyAnimTimer = 1.2f;
+
+        //Limpo as animações
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isFall", false);
+        animator.SetBool("isJumping", false);
+
+        //Fico parado
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
+        //Vou para o estado de Hurt
+        playerState = state.hurt;
     }
 
     #endregion
@@ -529,6 +672,7 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             isFalling = false;
         }
+
     }
 
     //Collision EXIT
@@ -537,6 +681,16 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Ground"))
         {
             isGrounded = false;
+        }
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        //SE colidir com a hitbox do inimigo, eu vou para estado de Hurt
+        if (other.CompareTag("EnemiesHitbox") && life >= 0)
+        {
+            EnterHurtState();
         }
     }
 
@@ -569,7 +723,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
-        if (!inDash) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        if (!inDash && !inHurtState && !inDieState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
     }
 
     // Update is called once per frame
@@ -593,7 +747,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }

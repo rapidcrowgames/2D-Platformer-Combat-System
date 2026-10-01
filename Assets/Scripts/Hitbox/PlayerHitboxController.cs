@@ -3,9 +3,18 @@ using UnityEngine;
 public class PlayerHitboxController : MonoBehaviour
 {
     //Pego o inimigo (Padrões)
-    private EnemyFather enemy;
-    private int damage = 1;
+    private int damage;
 
+
+    #region MÉTODOS
+
+    //Pega a variável Damage
+    public void SetDamage(int damageValue)
+    {
+        damage = damageValue;
+    }
+
+    #endregion
 
     #region COLISÕES
 
@@ -14,7 +23,13 @@ public class PlayerHitboxController : MonoBehaviour
         //SE minha hitbox colidir com o inimigo comum
         if (other.CompareTag("Enemy"))
         {
-            enemy.LifeEnemyCount(damage);
+            EnemyFather enemy = other.GetComponentInParent<EnemyFather>();
+
+            //SE tiver um inimigo, então aplico o dano
+            if (enemy != null)
+            {
+                enemy.LifeEnemyCount(damage);
+            }
         }
     }
 
@@ -23,7 +38,7 @@ public class PlayerHitboxController : MonoBehaviour
     //Inicia minhas variáveis e componentes
     private void Awake()
     {
-        enemy = FindFirstObjectByType<EnemyFather>();
+        
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -35,6 +50,6 @@ public class PlayerHitboxController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
