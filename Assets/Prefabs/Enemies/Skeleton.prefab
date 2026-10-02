@@ -404,6 +404,7 @@ MonoBehaviour:
   timerFixedDistance: 3
   timerFixedState: 6
   timerLoadFixedAttack: 0.8
+  knockbackForce: 3
 --- !u!1 &6862256385036106017
 GameObject:
   m_ObjectHideFlags: 0

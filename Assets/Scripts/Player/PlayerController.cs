@@ -14,12 +14,19 @@ public class PlayerController : MonoBehaviour
 
     //============================================================================================
 
+    //Game Objects
+    private EnemyFather enemyComum;
+
+    //============================================================================================
+
     //Variáveis de controle
     private int life = 10;
     private Vector2 moveInput; //Pega o Vector2 para o Input de movimento
     private float vel = 0; //Minha velocidade inicial de movimento
     [SerializeField] private float normalVel; //Define minha velocidade normal de movimento
     [SerializeField] private float slowVel; //Deixa minha velocidade de movimento mais lenta para usar em outros estados
+    [SerializeField] private float knockbackForce; // A força do knockback
+    [SerializeField] private float knockbackVel; //Minha velocidade durante o knockback
     private int direction = 1; //Descobre a direção em que o PLAYER está olhando [ Direita == 1 | Esquerda == -1 ]
     [SerializeField] private float jumpForce; //Força do pulo
     private bool isGrounded = false; //Controla se estou no chão ou não
@@ -75,9 +82,10 @@ public class PlayerController : MonoBehaviour
     //Movimento
     private void OnMove(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+       
+        if (inDash || inDieState || inHurtState) return;
 
-        if (inDash) return;
+        moveInput = value.Get<Vector2>();
 
         //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
         if (moveInput.x < 0)
@@ -327,7 +335,7 @@ public class PlayerController : MonoBehaviour
             if (direction == 1) // [Direita]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboFirstPunchTimer <= 0.25f && !hitboxCreated)
+                if (comboFirstPunchTimer <= 0.1f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
 
@@ -345,7 +353,7 @@ public class PlayerController : MonoBehaviour
             else if (direction == -1) // [Esquerda]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboFirstPunchTimer <= 0.25f && !hitboxCreated)
+                if (comboFirstPunchTimer <= 0.1f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
 
@@ -510,6 +518,7 @@ public class PlayerController : MonoBehaviour
     private void HurtState() //Machucado / sofrendo dano
     {
         inHurtState = true;
+        vel = knockbackVel;
         
         //SE ainda não mudei a animação
         if (!inAnimation)
@@ -682,6 +691,20 @@ public class PlayerController : MonoBehaviour
         playerState = state.hurt;
     }
 
+    //Knockback
+    private void Knockback()
+    {
+        //Descubro para qual lado devo ser empurrado
+        float knockbackDirection = transform.position.x >= enemyComum.transform.position.x ? 1f : -1f;
+
+        //Viro minha sprite para o inimigo
+        direction = knockbackDirection > 0 ? -1 : 1;
+
+
+        //Aplico no meu RB
+        rb.linearVelocity = new Vector2(knockbackDirection * knockbackForce, rb.linearVelocity.y);
+    }
+
     #endregion
 
     #region COLISÕES
@@ -714,6 +737,8 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("EnemiesHitbox") && life >= 0)
         {
             EnterHurtState();
+
+            Knockback();
         }
     }
 
@@ -727,6 +752,9 @@ public class PlayerController : MonoBehaviour
 
         //Minha velocidade
         vel = normalVel;
+
+        //Pego o inimigo comum
+        enemyComum = FindFirstObjectByType<EnemyFather>();
 
         //Variáveis de timers
         comboFirstPunchTimer = firstPunch;

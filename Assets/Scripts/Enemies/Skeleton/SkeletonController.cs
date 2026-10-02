@@ -25,8 +25,9 @@ public class SkeletonController : EnemyFather
     private int comboAttack = 0;
     private bool createHitbox = false;
 
-    //Método de LIFE UPDATE
-    private bool alive = true; 
+    //Método de KNOCKBACK
+    [SerializeField] private float knockbackForce;
+
 
     #endregion
 
@@ -94,16 +95,22 @@ public class SkeletonController : EnemyFather
 
     }
 
-    private void LifeUpdate()
+    private void Knockback()
     {
-        //Verifica minha vida, se chegou a 0 eu vou para o estado de EnterHurt uma vez
-        if (life <= 0 && alive)
-        {
-            EnterHurtState();
+        // Descubro para qual lado devo ser empurrado
+        float knockbackDirection =
+            transform.position.x >= player.transform.position.x ? 1f : -1f;
 
-            alive = false; //Não estou mais vivo
-        }
+        // Viro minha sprite para olhar para o atacante
+        direction = knockbackDirection > 0 ? -1 : 1;
+
+        // Aplico a velocidade do Knockback
+        rb.linearVelocity = new Vector2(
+            knockbackDirection * knockbackForce,
+            rb.linearVelocity.y
+        );
     }
+
 
 
     #endregion
@@ -116,6 +123,8 @@ public class SkeletonController : EnemyFather
         if (other.CompareTag("PlayerHitbox") && alive)
         {
             EnterHurtState();
+
+            Knockback();
         }
     }
 
@@ -474,9 +483,8 @@ public class SkeletonController : EnemyFather
 
     private void StateHurt()
     {
-        //Zero a velocidade
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-        
+        vel = knockbackVel;
+
         //SE ainda não mudei a animação
         if (!inAnimation)
         {
@@ -489,15 +497,15 @@ public class SkeletonController : EnemyFather
         //Pego a animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
 
-
-
         //SE a animação chegou ao fim, eu saio do estado
         if (animState.IsName("Hurt"))
         {
             if (animState.normalizedTime >= 1f && life > 0)
             {
                 inAnimation = false;
+                vel = normalVel;
                 enemyState = state.idle;
+
             }
 
             //SE acabou a vida, ele vai para o estado de DIE
@@ -505,6 +513,7 @@ public class SkeletonController : EnemyFather
             {
                 inAnimation = false;
                 alive = false;
+                vel = normalVel;
                 enemyState = state.die;
             }
         }
