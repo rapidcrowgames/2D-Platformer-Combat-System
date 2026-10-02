@@ -71,8 +71,15 @@ public class PlayerController : MonoBehaviour
 
     //==========================================================================================
 
-    //Variáveis do estado de Death
+    //Variáveis do estado de DEATH
     private bool inDieState = false;
+
+    //==========================================================================================
+
+    //Variáveis do estado de PARRY (prep bloqueio)
+    private bool parryWindow = false;
+    private float parryWindowTimer = 0f;
+    [SerializeField] private float parryWindowFixedTimer;
 
 
     #endregion
@@ -179,6 +186,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Parry
+    private void OnParry(InputValue value)
+    {
+        //SE eu apertar o botão & Não estiver caindo, correndo, pulando, atacando
+        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && inDieState)
+        {
+            animator.SetTrigger("parry");
+            playerState = state.parry;
+        }
+    }
+
     #endregion
 
     #region MÁQUINA DE ESTADOS e ENUM
@@ -194,6 +212,8 @@ public class PlayerController : MonoBehaviour
         lightAttack, 
         heavyAttack,
         hurt,
+        parry,
+        parryBlock,
         die
 
     }
@@ -229,6 +249,12 @@ public class PlayerController : MonoBehaviour
                 break;
             case state.hurt:
                 HurtState(); //Vair para o estado de machucado
+                break;
+            case state.parry:
+                ParryState(); //Vair para o estado de prep bloqueio
+                break;
+            case state.parryBlock:
+                ParryBlockState(); //Vair para o estado de bloqueio
                 break;
             case state.die:
                 DieState(); //Vai para o estado de morto
@@ -576,6 +602,32 @@ public class PlayerController : MonoBehaviour
         
     }
 
+    private void ParryState() //Prep bloqueio
+    {
+        
+        //Fico parado
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+        //Abro a janela na animação
+        if (animState.IsName("Parry"))
+        {
+            if (animState.normalizedTime >= 2.3f)
+            {
+
+            }
+        }
+    }
+
+    private void ParryBlockState() //Bloqueio
+    {
+
+    }
+
     private void DieState() //Morto
     {
         inDieState = true;
@@ -760,6 +812,7 @@ public class PlayerController : MonoBehaviour
         comboFirstPunchTimer = firstPunch;
         comboSecondPunchTimer = secondPunch;
         timerDashDurationFixed = timerDashDuration;
+        parryWindowTimer = parryWindowFixedTimer;
     }
 
 
