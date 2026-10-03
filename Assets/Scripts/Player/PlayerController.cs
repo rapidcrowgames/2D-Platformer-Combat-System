@@ -77,9 +77,15 @@ public class PlayerController : MonoBehaviour
     //==========================================================================================
 
     //Variáveis do estado de PARRY (prep bloqueio)
+    private bool inParryState = false;
     private bool parryWindow = false;
     private float parryWindowTimer = 0f;
     [SerializeField] private float parryWindowFixedTimer;
+
+    //==========================================================================================
+
+    //Variáveis do estado de PARRY BLOCK
+
 
 
     #endregion
@@ -90,7 +96,7 @@ public class PlayerController : MonoBehaviour
     private void OnMove(InputValue value)
     {
        
-        if (inDash || inDieState || inHurtState) return;
+        if (inDash || inDieState || inHurtState || inParryState) return;
 
         moveInput = value.Get<Vector2>();
 
@@ -190,7 +196,7 @@ public class PlayerController : MonoBehaviour
     private void OnParry(InputValue value)
     {
         //SE eu apertar o botão & Não estiver caindo, correndo, pulando, atacando
-        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && inDieState)
+        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState)
         {
             animator.SetTrigger("parry");
             playerState = state.parry;
@@ -604,8 +610,9 @@ public class PlayerController : MonoBehaviour
 
     private void ParryState() //Prep bloqueio
     {
-        
-        //Fico parado
+
+        inParryState = true;
+
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
 
@@ -616,10 +623,26 @@ public class PlayerController : MonoBehaviour
         //Abro a janela na animação
         if (animState.IsName("Parry"))
         {
-            if (animState.normalizedTime >= 2.3f)
+            if (animState.normalizedTime >= 0.42857f)
             {
-
+                parryWindow = true;
             }
+
+
+
+            /* SE dentro da janela do parry, eu colidir com a hitbox do
+             * inimigo eu vou para o estado de ParryBlock (Lógica está nas colisões)
+             */
+        }
+
+
+        //SE esgotar o timer da janela do parry, eu saio do estado
+        if (parryWindowTimer <= 0f)
+        {
+            parryWindow = false;
+            parryWindowTimer = parryWindowFixedTimer;
+            inParryState = false;
+            playerState = state.idle;
         }
     }
 
@@ -715,6 +738,12 @@ public class PlayerController : MonoBehaviour
         return life > 0;
     }
 
+    //Pega a variável se estou na janela do parry
+    public bool InParryWindow()
+    {
+        return (parryWindow && playerState == state.parry || playerState == state.parryBlock);
+    }
+
     //Prepara para entrar no estado de Hurt
     public void EnterHurtState()
     {
@@ -729,6 +758,9 @@ public class PlayerController : MonoBehaviour
         inHeavyAttack = false;
         inLightAttack = false;
         hitboxCreated = false;
+        inParryState = false;
+        parryWindow = false;
+        parryWindowTimer = parryWindowFixedTimer;
         heavyAnimTimer = 1.2f;
 
         //Limpo as animações
@@ -755,6 +787,13 @@ public class PlayerController : MonoBehaviour
 
         //Aplico no meu RB
         rb.linearVelocity = new Vector2(knockbackDirection * knockbackForce, rb.linearVelocity.y);
+    }
+
+    //Timers do parry
+    private void ParryTimers()
+    {
+        if (parryWindow) parryWindowTimer -= Time.deltaTime;
+        parryWindowTimer = Mathf.Clamp(parryWindowTimer, 0f, parryWindowFixedTimer);
     }
 
     #endregion
@@ -785,13 +824,27 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        //SE colidir com a hitbox do inimigo, eu vou para estado de Hurt
-        if (other.CompareTag("EnemiesHitbox") && life >= 0)
-        {
-            EnterHurtState();
+        //SE não é uma hitbox do inimigo, eu saio
+        if (!other.CompareTag("EnemiesHitbox")) return;
 
-            Knockback();
+
+        //SE acertei o parry
+        if (parryWindow && playerState == state.parry)
+        {
+            parryWindow = false;
+            inParryState = false;
+            playerState = state.parryBlock;
+
+            return;
         }
+
+        //SE já estou executando o PARRY BLOCK ou MORTO, eu ignoro
+        if (playerState == state.parryBlock || playerState == state.die) return;
+
+
+        //SE cheguei até aqui, não consegui defender e perdi vida
+        EnterHurtState();
+        Knockback();
     }
 
     #endregion
@@ -827,7 +880,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
-        if (!inDash && !inHurtState && !inDieState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        if (!inDash && !inHurtState && !inDieState && !inParryState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
     }
 
     // Update is called once per frame
@@ -847,11 +900,14 @@ public class PlayerController : MonoBehaviour
         //Timers do DASH
         DashTimers();
 
+        //Timers do PARRY
+        ParryTimers();
+
         #endregion
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(playerState);
+        UnityEngine.Debug.Log(parryWindow);
 
         #endregion
     }

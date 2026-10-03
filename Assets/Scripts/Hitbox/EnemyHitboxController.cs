@@ -10,7 +10,7 @@ public class EnemyHitboxController : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         //Se a hitbox do inimigo colidir com o player, eu tiro vida dele
-        if (other.CompareTag("PlayerOne"))
+        if (other.CompareTag("PlayerOne") && !player.InParryWindow() && player.PlayerIsAlive())
         {
             player.LifeCount(1);
         }
