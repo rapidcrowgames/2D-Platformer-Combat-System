@@ -102,12 +102,15 @@ public class SkeletonController : EnemyFather
     //SE eu colidir com a hitbox do player, eu vou para estado de dano
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("PlayerHitbox") && alive)
-        {
-            EnterHurtState();
 
-            Knockback();
-        }
+        //SE eu não colidi com a hitbox do player eu saio
+        if (!other.CompareTag("PlayerHitbox") || !alive) return;
+
+        //SE cheguei até aqui VIVO, eu sofro o Knockback e tomo dano
+        EnterHurtState();
+        Knockback();
+        
+
     }
 
     #endregion

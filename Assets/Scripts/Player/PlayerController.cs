@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         //SE apertar o botão de pulo
-        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState)
+        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState && !inDash)
         {
             //Ele pula
             rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
@@ -871,6 +871,7 @@ public class PlayerController : MonoBehaviour
         parryWindowTimer = Mathf.Clamp(parryWindowTimer, 0f, parryWindowFixedTimer);
     }
 
+
     #endregion
 
     #region COLISÕES
@@ -983,8 +984,6 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region DEBUGS
-
-        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }

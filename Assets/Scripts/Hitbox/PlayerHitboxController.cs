@@ -14,6 +14,7 @@ public class PlayerHitboxController : MonoBehaviour
         damage = damageValue;
     }
 
+
     #endregion
 
     #region COLISÕES
@@ -25,7 +26,7 @@ public class PlayerHitboxController : MonoBehaviour
         {
             EnemyFather enemy = other.GetComponentInParent<EnemyFather>();
 
-            //SE tiver um inimigo, então aplico o dano
+            //SE tiver um inimigo, então aplico o dano SE não tiver ocorrido um double parry
             if (enemy != null)
             {
                 enemy.LifeEnemyCount(damage);
@@ -38,7 +39,7 @@ public class PlayerHitboxController : MonoBehaviour
     //Inicia minhas variáveis e componentes
     private void Awake()
     {
-        
+
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

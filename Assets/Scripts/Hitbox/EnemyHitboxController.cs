@@ -9,11 +9,18 @@ public class EnemyHitboxController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        //Se a hitbox do inimigo colidir com o player, eu tiro vida dele
-        if (other.CompareTag("PlayerOne") && !player.InParryWindow() && player.PlayerIsAlive())
-        {
-            player.LifeCount(1);
-        }
+        //SE não colidi com o player eu saio
+        if (!other.CompareTag("PlayerOne")) return;
+
+        //SE não encontrei o player ou ele já morreu, eu saio
+        if (player == null || !player.PlayerIsAlive()) return;
+
+        //SE ele está protegido pelo parry normal
+        if (player.InParryWindow()) return;
+
+
+        //SE cheguei até aqui, dou o dano
+        player.LifeCount(1);
     }
 
     #endregion

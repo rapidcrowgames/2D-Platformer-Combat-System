@@ -396,15 +396,15 @@ MonoBehaviour:
   hitboxPosEsq: {fileID: 1402808202815125741}
   hitboxPosDir: {fileID: 8415234643112359087}
   hitbox: {fileID: 1770326843994680741, guid: b9905628b92e8264b9f832e92fd458e5, type: 3}
-  life: 3
+  life: 10
   direction: 1
   playerDetected: 0
   attackZone: 0
+  knockbackForce: 3
   idleFixedTimer: 2
   timerFixedDistance: 3
   timerFixedState: 6
   timerLoadFixedAttack: 0.8
-  knockbackForce: 3
 --- !u!1 &6862256385036106017
 GameObject:
   m_ObjectHideFlags: 0
