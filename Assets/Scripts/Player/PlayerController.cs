@@ -85,7 +85,7 @@ public class PlayerController : MonoBehaviour
     //==========================================================================================
 
     //Variáveis do estado de PARRY BLOCK
-
+    private bool inParryBlockState = false;
 
 
     #endregion
@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         //SE apertar o botão de pulo
-        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack)
+        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState)
         {
             //Ele pula
             rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
@@ -136,7 +136,7 @@ public class PlayerController : MonoBehaviour
     private void OnSprint(InputValue value)
     {
         //SE apertei o botão e o timer de duração está cheio & Não estou atacando
-        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack)
+        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack && !inParryBlockState && !inParryState)
         {
             //Estou no Dash
             inDash = true;
@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash)
+        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState)
         {
             inLightAttack = true;
 
@@ -180,7 +180,7 @@ public class PlayerController : MonoBehaviour
     private void OnHeavyAttack(InputValue value)
     {
         //SE apertar o botão de Ataque pesado & não estiver no ar & Não estiver no estado de ataque pesado ainda && Não estiver no ataque leve
-        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash)
+        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash && !inParryBlockState && !inParryState)
         {
             //Entrei no ataque pesado
             inHeavyAttack = true;
@@ -640,6 +640,7 @@ public class PlayerController : MonoBehaviour
         if (parryWindowTimer <= 0f)
         {
             parryWindow = false;
+            inAnimation = false;
             parryWindowTimer = parryWindowFixedTimer;
             inParryState = false;
             playerState = state.idle;
@@ -648,6 +649,80 @@ public class PlayerController : MonoBehaviour
 
     private void ParryBlockState() //Bloqueio
     {
+        inParryBlockState = true;
+
+        vel = slowVel;
+
+        //Troco a animação
+        if (!inAnimation)
+        {
+            animator.SetTrigger("parryBlock");
+
+            inAnimation = true;
+        }
+
+        //Pego minha animação
+        AnimatorStateInfo animatorState = animator.GetCurrentAnimatorStateInfo(0);
+
+
+        //Minha direção
+        if (animatorState.IsName("ParryBlock"))
+        {
+
+            if (direction == 1) // [ DIREITA ]
+            {
+                if (!hitboxCreated && animatorState.normalizedTime >= 0f)
+                {
+                    //Crio a hitbox na direita
+                    GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
+
+                    //Criei a hitbox
+                    hitboxCreated = true;
+
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(heavyDamage);
+
+                    //Destruo ela
+                    Destroy(instHitbox, 0.8f);
+                }
+
+            }
+            else if (direction == -1) // [ ESQUERDA ]
+            {
+                if (!hitboxCreated && animatorState.normalizedTime >= 0)
+                {
+                    //Crio a hitbox
+                    GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
+
+                    //Criei a hitbox
+                    hitboxCreated = true;
+
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(heavyDamage);
+
+                    //Destruo ela
+                    Destroy(instHitbox, 0.8f);
+                }
+            }
+
+        }
+
+        if (animatorState.IsName("ParryBlock"))
+        {
+            //No fim da animação, volto para o estado normal
+            if (animatorState.normalizedTime >= 1f)
+            {
+                vel = normalVel;
+                inParryBlockState = false;
+                inAnimation = false;
+                hitboxCreated = false;
+                playerState = state.idle;
+            }
+        }
+
+
 
     }
 
@@ -833,6 +908,8 @@ public class PlayerController : MonoBehaviour
         {
             parryWindow = false;
             inParryState = false;
+            inAnimation = false;
+            parryWindowTimer = parryWindowFixedTimer;
             playerState = state.parryBlock;
 
             return;
@@ -907,7 +984,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(parryWindow);
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }

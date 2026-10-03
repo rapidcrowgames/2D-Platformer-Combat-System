@@ -203,7 +203,7 @@ MonoBehaviour:
   animator: {fileID: 4377071372308750911}
   normalVel: 5
   slowVel: 1.3
-  knockbackForce: 10
+  knockbackForce: 3
   knockbackVel: 7
   jumpForce: 7
   hitbox: {fileID: 5938790610190415077, guid: d99d5213b288325418599eba8384e7d0, type: 3}
@@ -211,6 +211,7 @@ MonoBehaviour:
   hitboxPositionEsq: {fileID: 5894188423898205857}
   dashVel: 25
   timerDashDuration: 0.3
+  parryWindowFixedTimer: 0.2
 --- !u!114 &8171574166778275873
 MonoBehaviour:
   m_ObjectHideFlags: 0

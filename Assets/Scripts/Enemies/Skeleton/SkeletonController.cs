@@ -25,9 +25,6 @@ public class SkeletonController : EnemyFather
     private int comboAttack = 0;
     private bool createHitbox = false;
 
-    //Método de KNOCKBACK
-    [SerializeField] private float knockbackForce;
-
 
     #endregion
 
@@ -95,21 +92,6 @@ public class SkeletonController : EnemyFather
 
     }
 
-    private void Knockback()
-    {
-        // Descubro para qual lado devo ser empurrado
-        float knockbackDirection =
-            transform.position.x >= player.transform.position.x ? 1f : -1f;
-
-        // Viro minha sprite para olhar para o atacante
-        direction = knockbackDirection > 0 ? -1 : 1;
-
-        // Aplico a velocidade do Knockback
-        rb.linearVelocity = new Vector2(
-            knockbackDirection * knockbackForce,
-            rb.linearVelocity.y
-        );
-    }
 
 
 

@@ -29,6 +29,7 @@ public class EnemyFather : MonoBehaviour
     [SerializeField] protected bool attackZone; //Detecta se o player entrou na zona de ataque
     protected bool inAnimation = false; //Identifica se já está rodando a animação do estado
     protected bool alive = true;
+    [SerializeField] protected float knockbackForce;
 
     #endregion
 
@@ -49,6 +50,22 @@ public class EnemyFather : MonoBehaviour
     public void LifeEnemyCount(int life)
     {
         this.life -= life;
+    }
+
+    protected void Knockback()
+    {
+        // Descubro para qual lado devo ser empurrado
+        float knockbackDirection =
+            transform.position.x >= player.transform.position.x ? 1f : -1f;
+
+        // Viro minha sprite para olhar para o atacante
+        direction = knockbackDirection > 0 ? -1 : 1;
+
+        // Aplico a velocidade do Knockback
+        rb.linearVelocity = new Vector2(
+            knockbackDirection * knockbackForce,
+            rb.linearVelocity.y
+        );
     }
 
     #endregion
