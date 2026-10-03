@@ -482,12 +482,21 @@ public class SkeletonController : EnemyFather
         //Pego a animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
 
+        //HITSTOP
+        if (player != null && !hitstopOn)
+        {
+            player.PlayHitstop(0.20f);
+
+            hitstopOn = true;
+        }
+
         //SE a animação chegou ao fim, eu saio do estado
         if (animState.IsName("Hurt"))
         {
             if (animState.normalizedTime >= 1f && life > 0)
             {
                 inAnimation = false;
+                hitstopOn = false;
                 vel = normalVel;
                 enemyState = state.idle;
 
@@ -497,6 +506,7 @@ public class SkeletonController : EnemyFather
             if (animState.normalizedTime >= 1f && life <= 0)
             {
                 inAnimation = false;
+                hitstopOn = false;
                 alive = false;
                 vel = normalVel;
                 enemyState = state.die;

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -87,6 +88,11 @@ public class PlayerController : MonoBehaviour
     //Variáveis do estado de PARRY BLOCK
     private bool inParryBlockState = false;
 
+    //==========================================================================================
+
+    //Variáveis Game Feel
+    private bool inHitStop = false;
+
 
     #endregion
 
@@ -119,7 +125,7 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         //SE apertar o botão de pulo
-        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState && !inDash)
+        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState && !inDash && !inHurtState)
         {
             //Ele pula
             rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
@@ -136,7 +142,7 @@ public class PlayerController : MonoBehaviour
     private void OnSprint(InputValue value)
     {
         //SE apertei o botão e o timer de duração está cheio & Não estou atacando
-        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack && !inParryBlockState && !inParryState)
+        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack && !inParryBlockState && !inParryState && !inHurtState)
         {
             //Estou no Dash
             inDash = true;
@@ -156,7 +162,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState)
+        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState && !inHurtState)
         {
             inLightAttack = true;
 
@@ -180,7 +186,7 @@ public class PlayerController : MonoBehaviour
     private void OnHeavyAttack(InputValue value)
     {
         //SE apertar o botão de Ataque pesado & não estiver no ar & Não estiver no estado de ataque pesado ainda && Não estiver no ataque leve
-        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash && !inParryBlockState && !inParryState)
+        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash && !inParryBlockState && !inParryState && !inHurtState)
         {
             //Entrei no ataque pesado
             inHeavyAttack = true;
@@ -196,7 +202,7 @@ public class PlayerController : MonoBehaviour
     private void OnParry(InputValue value)
     {
         //SE eu apertar o botão & Não estiver caindo, correndo, pulando, atacando
-        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState)
+        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState && !inHurtState)
         {
             animator.SetTrigger("parry");
             playerState = state.parry;
@@ -869,6 +875,38 @@ public class PlayerController : MonoBehaviour
     {
         if (parryWindow) parryWindowTimer -= Time.deltaTime;
         parryWindowTimer = Mathf.Clamp(parryWindowTimer, 0f, parryWindowFixedTimer);
+    }
+
+
+    //HITSTOP
+    private IEnumerator HitStop(float duration)
+    {
+        //Entrei no HitStop
+        inHitStop = true;
+
+        //Guardo a velocidade original do tempo
+        float originalTimeScale = Time.timeScale;
+
+        //Congelo o jogo
+        Time.timeScale = 0f;
+
+        //Guardo uma quantidade de segundos reais
+        yield return new WaitForSecondsRealtime(duration);
+
+
+        //Restauro a velocidade original
+        Time.timeScale = originalTimeScale;
+
+
+        //Sai do hitstop
+        inHitStop = false;
+    }
+
+    public void PlayHitstop(float duration)
+    {
+        if (inHitStop) return;
+
+        StartCoroutine(HitStop(duration));
     }
 
 

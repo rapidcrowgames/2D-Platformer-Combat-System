@@ -31,6 +31,8 @@ public class EnemyFather : MonoBehaviour
     protected bool alive = true;
     [SerializeField] protected float knockbackForce;
 
+    protected bool hitstopOn = false;
+
 
     #endregion
 
