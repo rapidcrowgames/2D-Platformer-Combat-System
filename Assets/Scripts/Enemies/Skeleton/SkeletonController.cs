@@ -485,7 +485,7 @@ public class SkeletonController : EnemyFather
         //HITSTOP
         if (player != null && !hitstopOn)
         {
-            player.PlayHitstop(0.20f);
+            player.PlayHitstop(0.08f);  // Melhorar o feedback, está muito pouco.
 
             hitstopOn = true;
         }
