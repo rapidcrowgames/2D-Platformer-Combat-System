@@ -213,6 +213,11 @@ MonoBehaviour:
   dashVel: 25
   timerDashDuration: 0.3
   parryWindowFixedTimer: 0.2
+  enemyGapRadius: 30
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  timerGapFixed: 0
 --- !u!114 &8171574166778275873
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -94,6 +94,17 @@ public class PlayerController : MonoBehaviour
     private bool inHitStop = false;
 
 
+    //==========================================================================================
+
+    //Variáveis do estado de GAP CLOSER
+    private bool inGapCloserState = false;
+    [SerializeField] private float enemyGapRadius; //Cria o tamanho do raio de detecção
+    [SerializeField] private LayerMask enemyLayer;
+    private float timerGapDistance = 0f;
+    [SerializeField] private float timerGapFixed;
+    private Transform enemyTarget; //Guarda quem é o inimigo que foi detectado
+
+
     #endregion
 
     #region INPUTS
@@ -209,6 +220,41 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Gap closer
+    private void OnGap(InputValue value)
+    {
+
+        //SE segurei a tecla
+        if (value.isPressed && !inDieState && !inDash && !inHurtState && !inHeavyAttack && !isFalling)
+        {
+
+            //Faço a verificação de alguém próximo
+            Collider2D enemyDetected = Physics2D.OverlapCircle(transform.position, enemyGapRadius, enemyLayer);
+
+
+
+            //SE alguém foi detectado, eu vou para o estado
+            if (enemyDetected != null)
+            {
+
+                //pega o inimigo
+                EnemyFather enemy = enemyDetected.GetComponentInParent<EnemyFather>();
+
+
+
+                //SE o inimigo ainda existe
+                if (enemy != null)
+                {
+
+                    //Coloco na variável quem é o inimigo encontrado
+                    enemyTarget = enemy.transform;
+
+                    playerState = state.gapCloser;
+                }
+            }
+        }
+    }
+
     #endregion
 
     #region MÁQUINA DE ESTADOS e ENUM
@@ -226,6 +272,7 @@ public class PlayerController : MonoBehaviour
         hurt,
         parry,
         parryBlock,
+        gapCloser,
         die
 
     }
@@ -267,6 +314,9 @@ public class PlayerController : MonoBehaviour
                 break;
             case state.parryBlock:
                 ParryBlockState(); //Vair para o estado de bloqueio
+                break;
+            case state.gapCloser:
+                GapCloserState(); //Vair para o estado de bloqueio
                 break;
             case state.die:
                 DieState(); //Vai para o estado de morto
@@ -732,6 +782,13 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void GapCloserState() //Avanço / Gap
+    {
+        inGapCloserState = true;
+
+
+    }
+
     private void DieState() //Morto
     {
         inDieState = true;
@@ -982,6 +1039,7 @@ public class PlayerController : MonoBehaviour
         comboSecondPunchTimer = secondPunch;
         timerDashDurationFixed = timerDashDuration;
         parryWindowTimer = parryWindowFixedTimer;
+        timerGapDistance = timerGapFixed;
     }
 
 
