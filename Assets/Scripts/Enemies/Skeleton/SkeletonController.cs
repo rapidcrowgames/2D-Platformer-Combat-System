@@ -262,7 +262,7 @@ public class SkeletonController : EnemyFather
         vel = chaseVel;
 
         //SE eu não estiver mais no ZAIO de Detecção, eu saio
-        if (!playerDetected)
+        if (!playerDetected || !player.PlayerIsAlive())
         {
             inAnimation = false;
             enemyState = state.idle;

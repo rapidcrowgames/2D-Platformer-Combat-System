@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float slowVel; //Deixa minha velocidade de movimento mais lenta para usar em outros estados
     [SerializeField] private float knockbackForce; // A força do knockback
     [SerializeField] private float knockbackVel; //Minha velocidade durante o knockback
+    [SerializeField] private float gapVel; //Velocidade de movimento no Gap Closer
     private int direction = 1; //Descobre a direção em que o PLAYER está olhando [ Direita == 1 | Esquerda == -1 ]
     [SerializeField] private float jumpForce; //Força do pulo
     private bool isGrounded = false; //Controla se estou no chão ou não
@@ -100,8 +101,7 @@ public class PlayerController : MonoBehaviour
     private bool inGapCloserState = false;
     [SerializeField] private float enemyGapRadius; //Cria o tamanho do raio de detecção
     [SerializeField] private LayerMask enemyLayer;
-    private float timerGapDistance = 0f;
-    [SerializeField] private float timerGapFixed;
+    [SerializeField] private float gapStopDistance; //Distancia minima para ele parar de perseguir o inimigo e sair do estado
     private Transform enemyTarget; //Guarda quem é o inimigo que foi detectado
 
 
@@ -112,24 +112,7 @@ public class PlayerController : MonoBehaviour
     //Movimento
     private void OnMove(InputValue value)
     {
-       
-        if (inDash || inDieState || inHurtState || inParryState) return;
-
         moveInput = value.Get<Vector2>();
-
-        //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
-        if (moveInput.x < 0)
-        {
-            direction = -1;
-        }
-
-        else if (moveInput.x > 0) //Se tiver indo para a direita
-        {
-            direction = 1;
-        }
-
-        //Atualizo a posição correta da sprite no eixo X
-        visualRenderer.flipX = direction == -1;
     }
 
     //Pulo
@@ -245,6 +228,7 @@ public class PlayerController : MonoBehaviour
                 //SE o inimigo ainda existe
                 if (enemy != null)
                 {
+                    animator.SetTrigger("enterGap");
 
                     //Coloco na variável quem é o inimigo encontrado
                     enemyTarget = enemy.transform;
@@ -273,6 +257,7 @@ public class PlayerController : MonoBehaviour
         parry,
         parryBlock,
         gapCloser,
+        gapCloserAttack,
         die
 
     }
@@ -316,7 +301,10 @@ public class PlayerController : MonoBehaviour
                 ParryBlockState(); //Vair para o estado de bloqueio
                 break;
             case state.gapCloser:
-                GapCloserState(); //Vair para o estado de bloqueio
+                GapCloserState(); //Vair para o estado de Gap 
+                break;
+            case state.gapCloserAttack:
+                GapCloserAttackState(); //Vair para o estado de Ataque após o Gap
                 break;
             case state.die:
                 DieState(); //Vai para o estado de morto
@@ -784,9 +772,101 @@ public class PlayerController : MonoBehaviour
 
     private void GapCloserState() //Avanço / Gap
     {
+
+        //SE o inimigo não existe mais, eu saio
+        if (!enemyTarget) return;
+
+
+        vel = gapVel;
         inGapCloserState = true;
 
 
+        //Pega a distância do inimigo
+        float enemyDistanceX = enemyTarget.position.x - transform.position.x; 
+
+
+        //Defino a direção com base na distância
+        int gapDistance = 0;
+
+        if (enemyDistanceX > 0)
+        {
+            gapDistance = 1;
+        }
+        else if (enemyDistanceX < 0)
+        {
+            gapDistance = -1;
+        }
+
+
+        //Vou em direção a ele enquanto o timer ainda estiver ativo
+        if (gapDistance == 1)
+        {
+            //Vou para direita
+            direction = 1;
+            rb.linearVelocity = new Vector2(gapDistance * vel, rb.linearVelocity.y * enemyDistanceX); 
+        }
+        else if (gapDistance == -1)
+        {
+            //Vou para direita
+            direction = -1;
+            rb.linearVelocity = new Vector2(gapDistance * vel, rb.linearVelocity.y * enemyDistanceX);
+        }
+
+
+        //Descubro quanto falta para chegar no inimigo
+        float distanceToEnemy = Mathf.Abs(enemyTarget.position.x - transform.position.x);
+
+        
+        //No fim do timer eu mudo de estado para aplicar o golpe
+        if (distanceToEnemy <= gapStopDistance)
+        {
+            inGapCloserState = false;
+            playerState = state.gapCloserAttack;
+        }
+
+    }
+
+    private void GapCloserAttackState()
+    {
+        vel = slowVel;
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+        //Pego minha direção e animação
+        if (animState.IsName("GapCloserAttack"))
+        {
+            if (direction == 1)
+            {
+                if (!hitboxCreated && animState.normalizedTime >= 0)
+                {
+                    //Crio a hitbox na direita
+                    GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
+
+                    hitboxCreated = true;
+
+                    //Pego o dano do hit
+                    PlayerHitboxController hitDamage = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitDamage.SetDamage(lightDamage);
+
+                    Destroy(instHitbox, 0.2f);
+                }
+            }
+            else if (direction == -1)
+            {
+                if (!hitboxCreated && animState.normalizedTime >= 0f)
+                {
+                    //Crio a hitbox na esquerda
+                    GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
+
+                    hitboxCreated = true;
+
+                    //Pego o dano do hit
+                    PlayerHitboxController hitDamage = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitDamage.SetDamage(lightDamage);
+                }
+            }
+        }
     }
 
     private void DieState() //Morto
@@ -821,6 +901,26 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region MÉTODOS
+
+    //Atualiza meus movimentos e sprite no FixedUpdate
+    private void UpdateMoves()
+    {
+        if (inDash || inDieState || inHurtState || inParryState || inGapCloserState) return;
+
+        //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
+        if (moveInput.x < 0)
+        {
+            direction = -1;
+        }
+
+        else if (moveInput.x > 0) //Se tiver indo para a direita
+        {
+            direction = 1;
+        }
+
+        //Atualizo a posição correta da sprite no eixo X
+        visualRenderer.flipX = direction == -1;
+    }
 
     //Verifica se estou em queda livre
     private void IsFalling()
@@ -898,6 +998,7 @@ public class PlayerController : MonoBehaviour
         hitboxCreated = false;
         inParryState = false;
         parryWindow = false;
+        inGapCloserState = false;
         parryWindowTimer = parryWindowFixedTimer;
         heavyAnimTimer = 1.2f;
 
@@ -914,17 +1015,20 @@ public class PlayerController : MonoBehaviour
     }
 
     //Knockback
-    private void Knockback()
+    private void Knockback(float attackerX)
     {
-        //Descubro para qual lado devo ser empurrado
-        float knockbackDirection = transform.position.x >= enemyComum.transform.position.x ? 1f : -1f;
+        // Descubro para qual lado devo ser empurrado
+        float knockbackDirection =
+            transform.position.x >= attackerX ? 1f : -1f;
 
-        //Viro minha sprite para o inimigo
+        // Olho para o lado de onde veio o ataque
         direction = knockbackDirection > 0 ? -1 : 1;
 
-
-        //Aplico no meu RB
-        rb.linearVelocity = new Vector2(knockbackDirection * knockbackForce, rb.linearVelocity.y);
+        // Aplico o Knockback
+        rb.linearVelocity = new Vector2(
+            knockbackDirection * knockbackForce,
+            rb.linearVelocity.y
+        );
     }
 
     //Timers do parry
@@ -1017,7 +1121,11 @@ public class PlayerController : MonoBehaviour
 
         //SE cheguei até aqui, não consegui defender e perdi vida
         EnterHurtState();
-        Knockback();
+
+        // Passo a posição X da hitbox que realmente me acertou
+        Knockback(other.transform.position.x);
+
+
     }
 
     #endregion
@@ -1039,7 +1147,6 @@ public class PlayerController : MonoBehaviour
         comboSecondPunchTimer = secondPunch;
         timerDashDurationFixed = timerDashDuration;
         parryWindowTimer = parryWindowFixedTimer;
-        timerGapDistance = timerGapFixed;
     }
 
 
@@ -1053,8 +1160,11 @@ public class PlayerController : MonoBehaviour
     //Em intervalos fixos de tempo Executar lógica relacionada à física.
     private void FixedUpdate()
     {
+        //Atualiza minha movimentação e Sprite 
+        UpdateMoves();
+
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
-        if (!inDash && !inHurtState && !inDieState && !inParryState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        if (!inDash && !inHurtState && !inDieState && !inParryState && !inGapCloserState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
     }
 
     // Update is called once per frame
@@ -1077,10 +1187,17 @@ public class PlayerController : MonoBehaviour
         //Timers do PARRY
         ParryTimers();
 
+
         #endregion
 
         #region DEBUGS
 
         #endregion
+    }
+
+    //Draw 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawWireSphere(transform.position, enemyGapRadius);
     }
 }
