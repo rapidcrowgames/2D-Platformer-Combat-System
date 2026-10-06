@@ -225,8 +225,8 @@ public class PlayerController : MonoBehaviour
 
 
 
-                //SE o inimigo ainda existe
-                if (enemy != null)
+                //SE o inimigo ainda existe ou está vivo
+                if (enemy != null && enemy.IsAlive())
                 {
                     animator.SetTrigger("enterGap");
 
@@ -821,6 +821,8 @@ public class PlayerController : MonoBehaviour
         if (distanceToEnemy <= gapStopDistance)
         {
             inGapCloserState = false;
+            animator.SetTrigger("gapCloserAttack");
+            hitboxCreated = false;
             playerState = state.gapCloserAttack;
         }
 
@@ -864,7 +866,22 @@ public class PlayerController : MonoBehaviour
                     //Pego o dano do hit
                     PlayerHitboxController hitDamage = instHitbox.GetComponent<PlayerHitboxController>();
                     hitDamage.SetDamage(lightDamage);
+
+                    Destroy(instHitbox, 0.2f);
                 }
+            }
+
+
+
+
+            //No fim da animação eu saio do estado
+            if (animState.normalizedTime >= 1f)
+            {
+                vel = normalVel;
+
+                ResetVariables();
+
+                playerState = state.idle;
             }
         }
     }
@@ -920,6 +937,26 @@ public class PlayerController : MonoBehaviour
 
         //Atualizo a posição correta da sprite no eixo X
         visualRenderer.flipX = direction == -1;
+    }
+
+    //Reseta algumas variáveis quando entra em estados especificos
+    private void ResetVariables()
+    {
+        comboNumber = 0;
+        tapButton = 0;
+        timerDashDuration = timerDashDurationFixed;
+        comboFirstPunchTimer = firstPunch;
+        comboSecondPunchTimer = secondPunch;
+        inAnimation = false;
+        inDash = false;
+        inHeavyAttack = false;
+        inLightAttack = false;
+        hitboxCreated = false;
+        inParryState = false;
+        parryWindow = false;
+        inGapCloserState = false;
+        parryWindowTimer = parryWindowFixedTimer;
+        heavyAnimTimer = 1.2f;
     }
 
     //Verifica se estou em queda livre
@@ -986,21 +1023,7 @@ public class PlayerController : MonoBehaviour
     public void EnterHurtState()
     {
         //Limpo as informações
-        comboNumber = 0;
-        tapButton = 0;
-        timerDashDuration = timerDashDurationFixed;
-        comboFirstPunchTimer = firstPunch;
-        comboSecondPunchTimer = secondPunch;
-        inAnimation = false;
-        inDash = false;
-        inHeavyAttack = false;
-        inLightAttack = false;
-        hitboxCreated = false;
-        inParryState = false;
-        parryWindow = false;
-        inGapCloserState = false;
-        parryWindowTimer = parryWindowFixedTimer;
-        heavyAnimTimer = 1.2f;
+        ResetVariables();
 
         //Limpo as animações
         animator.SetBool("isRunning", false);
@@ -1038,6 +1061,9 @@ public class PlayerController : MonoBehaviour
         parryWindowTimer = Mathf.Clamp(parryWindowTimer, 0f, parryWindowFixedTimer);
     }
 
+
+
+    //======================================= GAME FEEL METHODS ===========================
 
     //HITSTOP
     private IEnumerator HitStop(float duration)

@@ -49,6 +49,12 @@ public class EnemyFather : MonoBehaviour
         attackZone = choice;
     }
 
+    //Saber se o inimigo está vivo
+    public bool IsAlive()
+    {
+        return life > 0;
+    }
+
     //Contador da vida
     public void LifeEnemyCount(int life)
     {
