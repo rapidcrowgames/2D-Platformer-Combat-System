@@ -159,6 +159,8 @@ public class PlayerController : MonoBehaviour
         {
             inLightAttack = true;
 
+            hitboxCreated = false;
+
             //Reproduz a animação 1
             animator.SetTrigger("inAttack01");
 
@@ -166,6 +168,7 @@ public class PlayerController : MonoBehaviour
             playerState = state.lightAttack;
 
             tapButton = 1; //Apertei 1x
+            comboNumber = 1;
         }
 
         //SE apertei pela SEGUNDA VEZ & já estou no ataque leve
@@ -474,10 +477,8 @@ public class PlayerController : MonoBehaviour
         vel = slowVel;
 
         //SE apertei pela primeira vez & o timer do PRIMEIRO GOLPE está carregado
-        if (tapButton == 1)
+        if (comboNumber == 1)
         {
-            //Estou no primeiro golpe do combo
-            comboNumber = 1;
 
             //Crio a hitbox na minha frente
             if (direction == 1) // [Direita]
