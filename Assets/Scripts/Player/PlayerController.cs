@@ -41,9 +41,7 @@ public class PlayerController : MonoBehaviour
     private int tapButton = 0; //Quantas vezes o botão de ataque foi pressionado
     private int comboNumber = 0; //Controla em qual golpe do combo estamos [No máximo 2]
     private float comboFirstPunchTimer = 0f; //Timer que pega o tempo da animação do golpe 1 do combo 
-    private float comboSecondPunchTimer = 0f; //Timer que pega o tempo da animação do golpe 2 do combo 
     private float firstPunch = 0.4f; //Tempo para colocar timer do primeiro golpe
-    private float secondPunch = 0.4f; //Tempo para colocar timer do segundo golpe
     private bool inLightAttack = false; //Identifica se estamos no ataque leve ou não
     [SerializeField] private GameObject hitbox; //Pega a Hitbox do player
     [SerializeField] private Transform hitboxPositionDir; //Pega a posição onde a Hitbox será criada [ Lado direito ]
@@ -55,7 +53,6 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis do estado de HEAVY ATTACK
     private bool inHeavyAttack = false; //Identifica se está no estado de ataque pesado
-    private float heavyAnimTimer = 1.2f; //Pega o tempo da animação do ataque pesado
     private int heavyDamage = 3;
 
     //============================================================================================
@@ -112,6 +109,8 @@ public class PlayerController : MonoBehaviour
     //Movimento
     private void OnMove(InputValue value)
     {
+        if (inDieState) return;
+        
         moveInput = value.Get<Vector2>();
     }
 
@@ -119,7 +118,7 @@ public class PlayerController : MonoBehaviour
     private void OnJump(InputValue value)
     {
         //SE apertar o botão de pulo
-        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState && !inDash && !inHurtState)
+        if (value.isPressed && isGrounded && !inLightAttack && !inHeavyAttack && !inParryState && !inParryBlockState && !inDash && !inHurtState && !inDieState)
         {
             //Ele pula
             rb.linearVelocity = new(rb.linearVelocity.x, jumpForce);
@@ -136,7 +135,7 @@ public class PlayerController : MonoBehaviour
     private void OnSprint(InputValue value)
     {
         //SE apertei o botão e o timer de duração está cheio & Não estou atacando
-        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack && !inParryBlockState && !inParryState && !inHurtState)
+        if (value.isPressed && timerDashDuration >= timerDashDurationFixed && !inLightAttack && !inHeavyAttack && !inParryBlockState && !inParryState && !inHurtState && !inDieState)
         {
             //Estou no Dash
             inDash = true;
@@ -156,7 +155,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState && !inHurtState)
+        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState && !inHurtState && !inDieState)
         {
             inLightAttack = true;
 
@@ -180,7 +179,7 @@ public class PlayerController : MonoBehaviour
     private void OnHeavyAttack(InputValue value)
     {
         //SE apertar o botão de Ataque pesado & não estiver no ar & Não estiver no estado de ataque pesado ainda && Não estiver no ataque leve
-        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash && !inParryBlockState && !inParryState && !inHurtState)
+        if (value.isPressed && isGrounded && !inHeavyAttack && !inLightAttack && !inDash && !inParryBlockState && !inParryState && !inHurtState && !inDieState)
         {
             //Entrei no ataque pesado
             inHeavyAttack = true;
@@ -212,29 +211,63 @@ public class PlayerController : MonoBehaviour
         {
 
             //Faço a verificação de alguém próximo
-            Collider2D enemyDetected = Physics2D.OverlapCircle(transform.position, enemyGapRadius, enemyLayer);
+            Collider2D[] enemyDetected = Physics2D.OverlapCircleAll(transform.position, enemyGapRadius, enemyLayer);
 
 
+            // Inimigo escolhido
+            EnemyFather closestEnemy = null;
 
-            //SE alguém foi detectado, eu vou para o estado
-            if (enemyDetected != null)
+            // Começa com distância infinita
+            float closestDistance = Mathf.Infinity;
+
+
+            // Passo por todos os inimigos encontrados
+            foreach (Collider2D enemyCollider in enemyDetected)
             {
+                EnemyFather enemy =
+                    enemyCollider.GetComponentInParent<EnemyFather>();
 
-                //pega o inimigo
-                EnemyFather enemy = enemyDetected.GetComponentInParent<EnemyFather>();
-
-
-
-                //SE o inimigo ainda existe ou está vivo
-                if (enemy != null && enemy.IsAlive())
+                // Se não existe ou está morto, ignoro
+                if (enemy == null || !enemy.IsAlive())
                 {
-                    animator.SetTrigger("enterGap");
-
-                    //Coloco na variável quem é o inimigo encontrado
-                    enemyTarget = enemy.transform;
-
-                    playerState = state.gapCloser;
+                    continue;
                 }
+
+
+                // Descubro onde ele está em relação ao Player
+                float enemyDistanceX =
+                    enemy.transform.position.x - transform.position.x;
+
+
+                // Verifico se ele está na minha frente
+                if (enemyDistanceX * direction <= 0)
+                {
+                    continue;
+                }
+
+
+                // Pego a distância sem negativo
+                float distance =
+                    Mathf.Abs(enemyDistanceX);
+
+
+                // Se esse inimigo for mais próximo que o anterior
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+
+
+            // Se encontrei algum inimigo válido
+            if (closestEnemy != null)
+            {
+                animator.SetTrigger("enterGap");
+
+                enemyTarget = closestEnemy.transform;
+
+                playerState = state.gapCloser;
             }
         }
     }
@@ -330,6 +363,13 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isRunning", true);
             playerState = state.run;
         }
+
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+        }
     }
 
     private void RunState() //Movendo
@@ -341,12 +381,24 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isRunning", false);
             playerState = state.idle;
         }
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+        }
     }
 
     private void JumpState() //Pulando
     {
         //Indica que estou pulando
         animator.SetBool("isJumping", true);
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+        }
     }
 
     private void FallState() //Caindo
@@ -364,13 +416,18 @@ public class PlayerController : MonoBehaviour
         }
 
         //Quando caio no chão eu reseto o ataque leve e pesado
-        comboSecondPunchTimer = secondPunch;
         comboFirstPunchTimer = firstPunch;
         tapButton = 0;
         comboNumber = 0;
         vel = normalVel;
         hitboxCreated = false;
         inLightAttack = false;
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+        }
 
     }
 
@@ -394,10 +451,25 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = 1.2f;
             playerState = state.idle;
         }
+
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+        }
     }
 
     private void LightAttackState() //At leve
     {
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
+
         //Quando estou no estado de ataque, minha velocidade diminui
         vel = slowVel;
 
@@ -423,7 +495,7 @@ public class PlayerController : MonoBehaviour
                     hitboxController.SetDamage(lightDamage);
 
                     //Depois de um tempo ela se destrói
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
             else if (direction == -1) // [Esquerda]
@@ -441,7 +513,7 @@ public class PlayerController : MonoBehaviour
                     hitboxController.SetDamage(lightDamage);
 
                     //Depois de um tempo ela se destrói
-                    Destroy(hitboxInst, 0.5f);
+                    Destroy(hitboxInst, 0.2f);
                 }
             }
         }
@@ -469,7 +541,6 @@ public class PlayerController : MonoBehaviour
         if (comboFirstPunchTimer <= 0f && comboNumber == 1 && tapButton >= 2)
         {
             comboNumber = 2;
-            comboSecondPunchTimer = secondPunch;
 
             hitboxCreated = false;
 
@@ -477,13 +548,16 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("inAttack02");
         }
 
-        if (comboNumber >= 2)
+        //Pego a animação do segundo golpe
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+        if (comboNumber >= 2 && animState.IsName("LightAttack02"))
         {
             //Crio a hitbox na minha frente
             if (direction == 1) // [Direita]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboSecondPunchTimer <= 0.3f && !hitboxCreated)
+                if (animState.normalizedTime >= 0.33f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
 
@@ -501,7 +575,7 @@ public class PlayerController : MonoBehaviour
             else if (direction == -1) // [Esquerda]
             {
                 //SE chegou no tempo certo do frame do ataque
-                if (comboSecondPunchTimer <= 0.3f && !hitboxCreated)
+                if (animState.normalizedTime >= 0.33f && !hitboxCreated)
                 {
                     GameObject hitboxInst = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
 
@@ -519,10 +593,9 @@ public class PlayerController : MonoBehaviour
 
 
             //SE o tempo da segunda animação acabou
-            if (comboSecondPunchTimer <= 0)
+            if (animState.normalizedTime >= 1f)
             {
                 //Eu reseto tudo
-                comboSecondPunchTimer = secondPunch;
                 comboFirstPunchTimer = firstPunch;
                 tapButton = 0;
                 comboNumber = 0;
@@ -538,57 +611,75 @@ public class PlayerController : MonoBehaviour
 
     private void HeavyAttackState() //At pesado
     {
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
+
+
         //Deixo minha velocidade de movimento mais lenta
         vel = slowVel;
 
-        //Pego minha direção
-        if (direction == 1) // [ DIREITA ]
+
+        //Pego minha animação
+        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+        //Pego minha direção para criar a hitbox com base no tempo da minha animação
+        if (animState.IsName("HeavyAttack"))
         {
-            if (!hitboxCreated && heavyAnimTimer <= 0.7f)
+            if (direction == 1) // [ DIREITA ]
             {
-                //Crio a hitbox na direita
-                GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
+                if (!hitboxCreated && animState.normalizedTime >= 0.26f)
+                {
+                    //Crio a hitbox na direita
+                    GameObject instHitbox = Instantiate(hitbox, hitboxPositionDir.position * direction, Quaternion.identity);
 
-                //Criei a hitbox
-                hitboxCreated = true;
+                    //Criei a hitbox
+                    hitboxCreated = true;
 
-                //Altero o dano da Hitbox
-                PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
-                hitboxController.SetDamage(heavyDamage);
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(heavyDamage);
 
-                //Destruo ela
-                Destroy(instHitbox, 0.8f);
+                    //Destruo ela
+                    Destroy(instHitbox, 0.2f);
+                }
+
+            }
+            else if (direction == -1) // [ ESQUERDA ]
+            {
+                if (!hitboxCreated && animState.normalizedTime >= 0.26f)
+                {
+                    //Crio a hitbox
+                    GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
+
+                    //Criei a hitbox
+                    hitboxCreated = true;
+
+                    //Altero o dano da Hitbox
+                    PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
+                    hitboxController.SetDamage(heavyDamage);
+
+                    //Destruo ela
+                    Destroy(instHitbox, 0.2f);
+                }
             }
 
-        }
-        else if (direction == -1) // [ ESQUERDA ]
-        {
-            if (!hitboxCreated && heavyAnimTimer <= 0.7f)
+
+
+
+            //SE a animação acabou eu saio do estado
+            if (animState.normalizedTime >= 1f)
             {
-                //Crio a hitbox
-                GameObject instHitbox = Instantiate(hitbox, -hitboxPositionEsq.position * direction, Quaternion.identity);
-
-                //Criei a hitbox
-                hitboxCreated = true;
-
-                //Altero o dano da Hitbox
-                PlayerHitboxController hitboxController = instHitbox.GetComponent<PlayerHitboxController>();
-                hitboxController.SetDamage(heavyDamage);
-
-                //Destruo ela
-                Destroy(instHitbox, 0.8f);
+                vel = normalVel;
+                hitboxCreated = false;
+                inHeavyAttack = false;
+                playerState = state.idle;
             }
         }
 
-        //Quando a animação acabar, eu saio do estado e reseto tudo
-        if (heavyAnimTimer <= 0)
-        {
-            vel = normalVel;
-            hitboxCreated = false;
-            inHeavyAttack = false;
-            heavyAnimTimer = 1.2f;
-            playerState = state.idle;
-        }
     }
 
     private void HurtState() //Machucado / sofrendo dano
@@ -619,12 +710,10 @@ public class PlayerController : MonoBehaviour
                 tapButton = 0;
                 timerDashDuration = timerDashDurationFixed;
                 comboFirstPunchTimer = firstPunch;
-                comboSecondPunchTimer = secondPunch;
                 inDash = false;
                 inHeavyAttack = false;
                 inLightAttack = false;
                 hitboxCreated = false;
-                heavyAnimTimer = 1.2f;
                 vel = normalVel;
 
                 playerState = state.idle;
@@ -639,13 +728,10 @@ public class PlayerController : MonoBehaviour
                 tapButton = 0;
                 timerDashDuration = timerDashDurationFixed;
                 comboFirstPunchTimer = firstPunch;
-                comboSecondPunchTimer = secondPunch;
                 inDash = false;
                 inHeavyAttack = false;
                 inLightAttack = false;
                 hitboxCreated = false;
-                heavyAnimTimer = 1.2f;
-
                 playerState = state.die;
             }
         }
@@ -654,6 +740,13 @@ public class PlayerController : MonoBehaviour
 
     private void ParryState() //Prep bloqueio
     {
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
 
         inParryState = true;
 
@@ -693,6 +786,13 @@ public class PlayerController : MonoBehaviour
 
     private void ParryBlockState() //Bloqueio
     {
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
+
         inParryBlockState = true;
 
         vel = slowVel;
@@ -776,6 +876,13 @@ public class PlayerController : MonoBehaviour
         //SE o inimigo não existe mais, eu saio
         if (!enemyTarget) return;
 
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
+
 
         vel = gapVel;
         inGapCloserState = true;
@@ -817,7 +924,7 @@ public class PlayerController : MonoBehaviour
         float distanceToEnemy = Mathf.Abs(enemyTarget.position.x - transform.position.x);
 
         
-        //No fim do timer eu mudo de estado para aplicar o golpe
+        //No fim da distância eu mudo de estado para aplicar o golpe
         if (distanceToEnemy <= gapStopDistance)
         {
             inGapCloserState = false;
@@ -830,6 +937,14 @@ public class PlayerController : MonoBehaviour
 
     private void GapCloserAttackState()
     {
+
+        //Garante que se eu morri, eu vou para estado de morto
+        if (life <= 0)
+        {
+            playerState = state.die;
+            return;
+        }
+
         vel = slowVel;
 
         //Pego minha animação
@@ -890,6 +1005,9 @@ public class PlayerController : MonoBehaviour
     {
         inDieState = true;
 
+        //Fico parado
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
         //SE eu ainda não mudei a animação
         if (!inAnimation)
         {
@@ -946,7 +1064,6 @@ public class PlayerController : MonoBehaviour
         tapButton = 0;
         timerDashDuration = timerDashDurationFixed;
         comboFirstPunchTimer = firstPunch;
-        comboSecondPunchTimer = secondPunch;
         inAnimation = false;
         inDash = false;
         inHeavyAttack = false;
@@ -956,7 +1073,6 @@ public class PlayerController : MonoBehaviour
         parryWindow = false;
         inGapCloserState = false;
         parryWindowTimer = parryWindowFixedTimer;
-        heavyAnimTimer = 1.2f;
     }
 
     //Verifica se estou em queda livre
@@ -976,12 +1092,6 @@ public class PlayerController : MonoBehaviour
     {
         //SE estou no primeiro ataque do combo, diminuo o timer da primeira animação
         if (comboNumber == 1 && comboFirstPunchTimer > 0) comboFirstPunchTimer -= Time.deltaTime; 
-
-        //SE estou no segundo ataque do combo, diminuo o timer da segunda animação
-        if (comboNumber >= 2 && comboSecondPunchTimer > 0) comboSecondPunchTimer -= Time.deltaTime;
-
-        //SE estou no ataque pesado, diminui o timer da animação
-        if (inHeavyAttack && heavyAnimTimer > 0) heavyAnimTimer -= Time.deltaTime;
     }
 
     //Contagem dos timers do DASH
@@ -1170,7 +1280,6 @@ public class PlayerController : MonoBehaviour
 
         //Variáveis de timers
         comboFirstPunchTimer = firstPunch;
-        comboSecondPunchTimer = secondPunch;
         timerDashDurationFixed = timerDashDuration;
         parryWindowTimer = parryWindowFixedTimer;
     }
@@ -1217,6 +1326,8 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region DEBUGS
+
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }
