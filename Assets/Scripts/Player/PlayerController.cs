@@ -155,7 +155,7 @@ public class PlayerController : MonoBehaviour
     private void OnAttack(InputValue value)
     {
         //SE apertar o botão de ataque & eu ainda não estou no ataque leve & Arrecem vou apertar a primeira vez o botão
-        if (value.isPressed && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState && !inHurtState && !inDieState)
+        if (value.isPressed && isGrounded && !inLightAttack && tapButton <= 0 && !inHeavyAttack && !inDash && !inParryState && !inParryBlockState && !inHurtState && !inDieState)
         {
             inLightAttack = true;
 

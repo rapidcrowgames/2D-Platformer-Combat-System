@@ -478,6 +478,15 @@ public class SkeletonController : EnemyFather
             inAnimation = true;
         }
 
+        //SE ainda não criei a particula de sangue, então eu crio ela
+        if (!bloodPartyCreated)
+        {
+            GameObject bloodInst = Instantiate(bloodParty, transform.position, Quaternion.identity);
+
+            bloodPartyCreated = true;
+
+            Destroy(bloodInst, 4f);
+        }
 
         //Pego a animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
@@ -498,6 +507,7 @@ public class SkeletonController : EnemyFather
                 inAnimation = false;
                 hitstopOn = false;
                 vel = normalVel;
+                bloodPartyCreated = false;
                 enemyState = state.idle;
 
             }
@@ -509,6 +519,7 @@ public class SkeletonController : EnemyFather
                 hitstopOn = false;
                 alive = false;
                 vel = normalVel;
+                bloodPartyCreated = false;
                 enemyState = state.die;
             }
         }

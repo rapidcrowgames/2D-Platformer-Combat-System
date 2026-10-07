@@ -16,6 +16,7 @@ public class EnemyFather : MonoBehaviour
 
     //GAME OBJECTS
     [SerializeField] protected GameObject hitbox; //Hitbox de ataque do inimigo
+    [SerializeField] protected GameObject bloodParty; //Particula de sangue
 
     //Variáveis de controle
     [SerializeField] protected int life; 
@@ -30,6 +31,7 @@ public class EnemyFather : MonoBehaviour
     protected bool inAnimation = false; //Identifica se já está rodando a animação do estado
     protected bool alive = true;
     [SerializeField] protected float knockbackForce;
+    protected bool bloodPartyCreated = false; //Verifica se criei a particula de sangue
 
     protected bool hitstopOn = false;
 
