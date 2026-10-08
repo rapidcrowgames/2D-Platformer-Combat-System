@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis Game Feel
     private bool inHitStop = false;
-    [SerializeField] private CameraController screenshake;
+    private CameraController screenshake;
 
 
     //==========================================================================================
@@ -1321,6 +1321,9 @@ public class PlayerController : MonoBehaviour
 
         //Pego o inimigo comum
         enemyComum = FindFirstObjectByType<EnemyFather>();
+
+        //Pega a câmera
+        screenshake = Camera.main.GetComponent<CameraController>();
 
         //Variáveis de timers
         comboFirstPunchTimer = firstPunch;
