@@ -485,7 +485,7 @@ public class SkeletonController : EnemyFather
 
             bloodPartyCreated = true;
 
-            Destroy(bloodInst, 4f);
+            Destroy(bloodInst, 2f);
         }
 
         //Pego a animação

@@ -202,6 +202,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   visualRenderer: {fileID: 605259107788111084}
   animator: {fileID: 4377071372308750911}
+  bloodPart: {fileID: 5275368986746234979, guid: 1a0d9654a788cd24597434f98d628e06, type: 3}
+  parryPart: {fileID: 1552300195022412574, guid: 9c3c19e64a3a628479728adb74d7c708, type: 3}
   normalVel: 5
   slowVel: 1.3
   knockbackForce: 3

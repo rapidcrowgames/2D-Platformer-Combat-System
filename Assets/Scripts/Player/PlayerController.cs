@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
 
     //Game Objects
     private EnemyFather enemyComum;
+    [SerializeField] private GameObject bloodPart; //Partícula de sangue
+    [SerializeField] private GameObject parryPart; //Partícula do parry
 
     //============================================================================================
 
@@ -34,6 +36,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false; //Controla se estou no chão ou não
     private bool isFalling = false; //Controla se estou caindo
     private bool inAnimation = false; //Controla se estou em alguma animação controlada por estado e não Input
+    private bool partCreated = false; //Controla se a partícula foi criada
 
     //============================================================================================
 
@@ -696,6 +699,17 @@ public class PlayerController : MonoBehaviour
             inAnimation = true;
         }
 
+        //SE ainda não criei a partícula do sangue, eu crio
+        if (!partCreated)
+        {
+            GameObject bloodInst = Instantiate(bloodPart, transform.position, Quaternion.identity);
+
+            partCreated = true;
+
+            Destroy(bloodInst, 2f);
+        }
+
+
         //Pego minha animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
 
@@ -715,6 +729,7 @@ public class PlayerController : MonoBehaviour
                 inHeavyAttack = false;
                 inLightAttack = false;
                 hitboxCreated = false;
+                partCreated = false;
                 vel = normalVel;
 
                 playerState = state.idle;
@@ -733,6 +748,7 @@ public class PlayerController : MonoBehaviour
                 inHeavyAttack = false;
                 inLightAttack = false;
                 hitboxCreated = false;
+                partCreated = false;
                 playerState = state.die;
             }
         }
@@ -752,6 +768,7 @@ public class PlayerController : MonoBehaviour
         inParryState = true;
 
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
 
 
         //Pego minha animação
@@ -781,6 +798,7 @@ public class PlayerController : MonoBehaviour
             inAnimation = false;
             parryWindowTimer = parryWindowFixedTimer;
             inParryState = false;
+            partCreated = false;
             playerState = state.idle;
         }
     }
@@ -1243,9 +1261,27 @@ public class PlayerController : MonoBehaviour
         //SE acertei o parry
         if (parryWindow && playerState == state.parry)
         {
+
+            //SE ainda não criei a partícula, eu crio
+            if (!partCreated)
+            {
+                GameObject parryPartInst = Instantiate(parryPart, transform.position * direction, Quaternion.identity);
+
+                partCreated = true;
+
+                Destroy(parryPartInst, 4f);
+            }
+
+
+            //hitstop
+            PlayHitstop(0.3f);
+            inHitStop = true;
+
             parryWindow = false;
             inParryState = false;
             inAnimation = false;
+            partCreated = false;
+            inHitStop = false;
             parryWindowTimer = parryWindowFixedTimer;
             playerState = state.parryBlock;
 
