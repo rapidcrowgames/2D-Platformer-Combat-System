@@ -499,7 +499,7 @@ public class SkeletonController : EnemyFather
         if (player != null && !hitstopOn)
         {
             player.PlayHitstop(0.08f);  // Melhorar o feedback, está muito pouco.
-            screenshake.Shake(0.2f, 0.07f);
+            screenshake.Shake(0.2f, 0.04f);
 
             hitstopOn = true;
         }

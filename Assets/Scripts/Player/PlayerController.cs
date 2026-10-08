@@ -3,6 +3,7 @@ using System.Diagnostics;
 using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class PlayerController : MonoBehaviour
@@ -20,6 +21,14 @@ public class PlayerController : MonoBehaviour
     private EnemyFather enemyComum;
     [SerializeField] private GameObject bloodPart; //Partícula de sangue
     [SerializeField] private GameObject parryPart; //Partícula do parry
+
+    //============================================================================================
+
+    //Variáveis de HUD
+
+    [SerializeField] private Image lifeBar; //Imagem da barra de vida
+    [SerializeField] private int lifeMax;
+
 
     //============================================================================================
 
@@ -852,7 +861,7 @@ public class PlayerController : MonoBehaviour
                     hitboxController.SetDamage(heavyDamage);
 
                     //Destruo ela
-                    Destroy(instHitbox, 0.8f);
+                    Destroy(instHitbox, 0.3f);
                 }
 
             }
@@ -871,7 +880,7 @@ public class PlayerController : MonoBehaviour
                     hitboxController.SetDamage(heavyDamage);
 
                     //Destruo ela
-                    Destroy(instHitbox, 0.8f);
+                    Destroy(instHitbox, 0.3f);
                 }
             }
 
@@ -1231,6 +1240,18 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    //======================================= HUD METHODS =================================
+
+    //Converte a vida do player em barra
+    private void lifeBarUpdate() 
+    {
+        lifeBar.fillAmount = ((float)life / (float)lifeMax);
+
+        //Mudando a cor da vida
+        lifeBar.color = new Color32(201, (byte)(lifeBar.fillAmount * 255), 47, 255);
+    }
+
+
     #endregion
 
     #region COLISÕES
@@ -1357,6 +1378,9 @@ public class PlayerController : MonoBehaviour
 
         //Maquina de estados
         StateMachine();
+
+        //HUD
+        lifeBarUpdate();
 
         #region SIMPLE TIMERS
 
