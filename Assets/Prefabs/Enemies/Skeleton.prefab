@@ -397,6 +397,7 @@ MonoBehaviour:
   hitboxPosDir: {fileID: 8415234643112359087}
   hitbox: {fileID: 1770326843994680741, guid: b9905628b92e8264b9f832e92fd458e5, type: 3}
   bloodParty: {fileID: 5275368986746234979, guid: 1a0d9654a788cd24597434f98d628e06, type: 3}
+  screenshake: {fileID: 4532040057688780108, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
   life: 10
   direction: 1
   playerDetected: 0

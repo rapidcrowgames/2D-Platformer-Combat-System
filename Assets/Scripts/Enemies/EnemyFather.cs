@@ -17,6 +17,7 @@ public class EnemyFather : MonoBehaviour
     //GAME OBJECTS
     [SerializeField] protected GameObject hitbox; //Hitbox de ataque do inimigo
     [SerializeField] protected GameObject bloodParty; //Particula de sangue
+    protected CameraController screenshake; 
 
     //Variáveis de controle
     [SerializeField] protected int life; 

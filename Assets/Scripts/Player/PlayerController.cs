@@ -1,8 +1,9 @@
+using System.Collections;
 using System.Diagnostics;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
-using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -93,6 +94,7 @@ public class PlayerController : MonoBehaviour
 
     //Variáveis Game Feel
     private bool inHitStop = false;
+    [SerializeField] private CameraController screenshake;
 
 
     //==========================================================================================
@@ -709,6 +711,9 @@ public class PlayerController : MonoBehaviour
             Destroy(bloodInst, 2f);
         }
 
+        //Screenshake
+        screenshake.Shake(0.2f, 0.1f);
+
 
         //Pego minha animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
@@ -1276,6 +1281,8 @@ public class PlayerController : MonoBehaviour
             //hitstop
             PlayHitstop(0.3f);
             inHitStop = true;
+            //Screenshake
+            screenshake.Shake(0.4f, 0.1f);
 
             parryWindow = false;
             inParryState = false;

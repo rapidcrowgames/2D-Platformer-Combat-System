@@ -488,16 +488,24 @@ public class SkeletonController : EnemyFather
             Destroy(bloodInst, 2f);
         }
 
+
+
         //Pego a animação
         AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+
+
 
         //HITSTOP
         if (player != null && !hitstopOn)
         {
             player.PlayHitstop(0.08f);  // Melhorar o feedback, está muito pouco.
+            screenshake.Shake(0.2f, 0.07f);
 
             hitstopOn = true;
         }
+
+
+
 
         //SE a animação chegou ao fim, eu saio do estado
         if (animState.IsName("Hurt"))
@@ -567,6 +575,9 @@ public class SkeletonController : EnemyFather
 
         //Pega o player
         player = FindFirstObjectByType<PlayerController>();
+
+        //Pega a câmera
+        screenshake = Camera.main.GetComponent<CameraController>();
 
         #region TIMERS CONFIG
 
