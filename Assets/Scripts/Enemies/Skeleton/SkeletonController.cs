@@ -105,7 +105,7 @@ public class SkeletonController : EnemyFather
 
         //Reproduz o som
         int randomSound = UnityEngine.Random.Range(0, swordAirSounds.Length);
-        audioSource.PlayOneShot(swordAirSounds[randomSound], 0.3f);
+        audioSource.PlayOneShot(swordAirSounds[randomSound], 0.6f);
     }
 
     //Usado em estado
@@ -115,7 +115,7 @@ public class SkeletonController : EnemyFather
 
         //Reproduz o som
         int randomSound = UnityEngine.Random.Range(0, swordDamageSounds.Length);
-        audioSource.PlayOneShot(swordDamageSounds[randomSound], 0.2f);
+        audioSource.PlayOneShot(swordDamageSounds[randomSound], 0.5f);
     }
 
     //Usado em estado
@@ -125,7 +125,7 @@ public class SkeletonController : EnemyFather
 
 
         //Reproduz o som
-        audioSource.PlayOneShot(deathSound, 0.2f);
+        audioSource.PlayOneShot(deathSound, 0.5f);
     }
 
 

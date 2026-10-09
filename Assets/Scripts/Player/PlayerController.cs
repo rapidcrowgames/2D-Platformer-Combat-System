@@ -1076,30 +1076,37 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void DieState() //Morto
+    private void DieState()
     {
-        inDieState = true;
-
-        //Fico parado
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-
-        //SE eu ainda não mudei a animação
-        if (!inAnimation)
+        // Só executa UMA VEZ quando entro no estado de morte
+        if (!inDieState)
         {
+            inDieState = true;
+
+            // Limpo resíduos dos outros estados
+            ResetVariables();
+
+            inParryBlockState = false;
+            isFalling = false;
+            moveInput = Vector2.zero;
+
+            // Limpo animações de movimento
+            animator.SetBool("isRunning", false);
+            animator.SetBool("isJumping", false);
+            animator.SetBool("isFall", false);
+
+            // Inicio a morte
             animator.SetTrigger("die");
 
-            //Som
             PlayerDeathSound();
-
-            inAnimation = true;
         }
 
+        // Não me movimento mais
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
-        //Pego minha animação
-        AnimatorStateInfo animState = animator.GetCurrentAnimatorStateInfo(0);
+        AnimatorStateInfo animState =
+            animator.GetCurrentAnimatorStateInfo(0);
 
-
-        //SE minha animação chegou ao fim eu me destruo
         if (animState.IsName("Die"))
         {
             if (animState.normalizedTime >= 1f)
@@ -1156,6 +1163,9 @@ public class PlayerController : MonoBehaviour
     //Verifica se estou em queda livre
     private void IsFalling()
     {
+        //SE estou morto, eu saio do método
+        if (inDieState || playerState == state.die || life <= 0) return;
+        
         //SE estou caindo
         if (!isGrounded && rb.linearVelocity.y < 0 && !isFalling && !inDash)
         {
@@ -1266,7 +1276,7 @@ public class PlayerController : MonoBehaviour
 
 
         //Reproduz o som
-        audioSource.PlayOneShot(swordSounds[randomSound], 0.3f);
+        audioSource.PlayOneShot(swordSounds[randomSound], 0.6f);
     }  
 
 
@@ -1277,7 +1287,7 @@ public class PlayerController : MonoBehaviour
 
         //Reproduzo o som
         int randomSound = UnityEngine.Random.Range(0, swordDamage.Length);
-        audioSource.PlayOneShot(swordDamage[randomSound], 0.2f);
+        audioSource.PlayOneShot(swordDamage[randomSound], 0.5f);
     }
 
 
@@ -1289,7 +1299,7 @@ public class PlayerController : MonoBehaviour
 
         //Reproduzo o som
         int randomSound = UnityEngine.Random.Range(0, hurtSounds.Length);
-        audioSource.PlayOneShot(hurtSounds[randomSound], 0.15f);
+        audioSource.PlayOneShot(hurtSounds[randomSound], 0.3f);
     }
 
 
@@ -1300,7 +1310,7 @@ public class PlayerController : MonoBehaviour
 
 
         //Reproduz o som
-        audioSource.PlayOneShot(deathSound, 0.2f);
+        audioSource.PlayOneShot(deathSound, 0.5f);
     }
 
 
@@ -1320,7 +1330,7 @@ public class PlayerController : MonoBehaviour
         // * Reproduz o som do contra-ataque após acertar o parry * //
 
         //Reproduz o som
-        audioSource.PlayOneShot(parryBlockSound, 0.5f);
+        audioSource.PlayOneShot(parryBlockSound, 0.7f);
     }
 
     
@@ -1331,7 +1341,7 @@ public class PlayerController : MonoBehaviour
 
 
         //Reproduz o som
-        audioSource.PlayOneShot(dashSound, 0.14f);
+        audioSource.PlayOneShot(dashSound, 0.3f);
     }
 
 
@@ -1384,8 +1394,6 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-
-
     #region COLISÕES
 
     //Collision ENTER
@@ -1414,6 +1422,11 @@ public class PlayerController : MonoBehaviour
     {
         //SE não é uma hitbox do inimigo, eu saio
         if (!other.CompareTag("EnemiesHitbox")) return;
+
+
+
+        //SE morri, eu saio daqui
+        if (life <= 0 || playerState == state.die || inDieState) return;
 
 
         //SE acertei o parry
