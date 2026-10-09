@@ -394,10 +394,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkeletonController
   visualRenderer: {fileID: 335161178350478200}
   animator: {fileID: 2961195626941831409}
+  audioSource: {fileID: 1184278519624725997}
   hitboxPosEsq: {fileID: 1402808202815125741}
   hitboxPosDir: {fileID: 8415234643112359087}
   hitbox: {fileID: 1770326843994680741, guid: b9905628b92e8264b9f832e92fd458e5, type: 3}
   bloodParty: {fileID: 5275368986746234979, guid: 1a0d9654a788cd24597434f98d628e06, type: 3}
+  swordAirSounds:
+  - {fileID: 8300000, guid: e08e515fb5f5d46459aa8bec89146a65, type: 3}
+  - {fileID: 8300000, guid: 0576de2808e4e3a449d76f1df414a297, type: 3}
+  - {fileID: 8300000, guid: b07afb25e2dadab4c8299e6bef7b918c, type: 3}
+  - {fileID: 8300000, guid: 1ff8332c32630b3459b0c45588ce3f6f, type: 3}
+  swordDamageSounds:
+  - {fileID: 8300000, guid: 109ba65c345279a4ba9868e52bf9a6ba, type: 3}
+  - {fileID: 8300000, guid: 527f8a54edbf0bb4b861c4c9155daf62, type: 3}
+  deathSound: {fileID: 8300000, guid: 33aaadacd8e7aa24aa647c037a55d986, type: 3}
   life: 10
   direction: 1
   playerDetected: 0

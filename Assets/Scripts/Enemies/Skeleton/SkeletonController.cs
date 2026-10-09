@@ -87,12 +87,46 @@ public class SkeletonController : EnemyFather
 
         createHitbox = false;
 
+        //Som da espada me cortando
+        EnemySwordDamageSound();
+
         //Vou para estado de Dano
         enemyState = state.hurt;
 
     }
 
 
+    //============================== SOM =================================
+
+    //Usado nos frames de todas animações de ataque
+    private void EnemySwordAirSound()
+    {
+        // * Reproduz o som da espada quando passa no ar / vázio * //
+
+        //Reproduz o som
+        int randomSound = UnityEngine.Random.Range(0, swordAirSounds.Length);
+        audioSource.PlayOneShot(swordAirSounds[randomSound], 0.3f);
+    }
+
+    //Usado em estado
+    private void EnemySwordDamageSound()
+    {
+        // * Reproduz o som de quando a espada do player me atinge * //
+
+        //Reproduz o som
+        int randomSound = UnityEngine.Random.Range(0, swordDamageSounds.Length);
+        audioSource.PlayOneShot(swordDamageSounds[randomSound], 0.2f);
+    }
+
+    //Usado em estado
+    private void EnemyDeathSound()
+    {
+        // * Reproduz o som de morte * //
+
+
+        //Reproduz o som
+        audioSource.PlayOneShot(deathSound, 0.2f);
+    }
 
 
     #endregion
@@ -543,6 +577,9 @@ public class SkeletonController : EnemyFather
         if (!inAnimation)
         {
             animator.SetTrigger("die");
+
+            //Som
+            EnemyDeathSound();
 
             inAnimation = true;
         }

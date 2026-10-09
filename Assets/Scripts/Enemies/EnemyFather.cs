@@ -9,6 +9,7 @@ public class EnemyFather : MonoBehaviour
     [SerializeField] protected SpriteRenderer visualRenderer; //Pega o sprite renderer
     [SerializeField] protected Animator animator; //Pega o animator
     protected PlayerController player; //Pega o player em cena
+    [SerializeField] protected AudioSource audioSource; //Pega a "caixa de som" dos inimigos
 
     //TRANSFORMS
     [SerializeField] protected Transform hitboxPosEsq; //Posição esquerda para criar a Hitbox
@@ -17,7 +18,13 @@ public class EnemyFather : MonoBehaviour
     //GAME OBJECTS
     [SerializeField] protected GameObject hitbox; //Hitbox de ataque do inimigo
     [SerializeField] protected GameObject bloodParty; //Particula de sangue
-    protected CameraController screenshake; 
+    protected CameraController screenshake;
+
+    //SONS
+    [SerializeField] protected AudioClip[] swordAirSounds; //Sons da espada no ar / vázio
+    [SerializeField] protected AudioClip[] swordDamageSounds; //Sons do corte da espada quando o player me acerta
+    [SerializeField] protected AudioClip deathSound; //Som de morte
+
 
     //Variáveis de controle
     [SerializeField] protected int life; 
@@ -34,7 +41,9 @@ public class EnemyFather : MonoBehaviour
     [SerializeField] protected float knockbackForce;
     protected bool bloodPartyCreated = false; //Verifica se criei a particula de sangue
 
+    // GAME FEEL
     protected bool hitstopOn = false;
+
 
 
     #endregion

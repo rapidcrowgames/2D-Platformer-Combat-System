@@ -67,6 +67,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioClip deathSound; //Som de morte do player
     [SerializeField] private AudioClip parrySound; //Som do parry
     [SerializeField] private AudioClip parryBlockSound; //Som do ataque após usar o parry
+    [SerializeField] private AudioClip dashSound; //Som do Dash
 
 
     //============================================================================================
@@ -183,6 +184,9 @@ public class PlayerController : MonoBehaviour
 
             //Animação do Dash
             animator.SetTrigger("isDash");
+
+            //Som
+            PlayerDashSound();
 
             //Altera a velocidade do player para o DASH
             vel = dashVel;
@@ -1247,8 +1251,9 @@ public class PlayerController : MonoBehaviour
 
 
 
-    //======================================= SOUND METHODS =================================
+    //======================================= SONS =================================
 
+    //Sendo usado nos frames de todas as animações de ATAQUE
     private void SwordAirSound()
     {
         // * Reproduz o som da espada quando ataca o ar / vázio * //
@@ -1264,6 +1269,8 @@ public class PlayerController : MonoBehaviour
         audioSource.PlayOneShot(swordSounds[randomSound], 0.3f);
     }  
 
+
+    //Usado em estado
     private void SwordDamageSound()
     {
         // * Reproduz o som de dano no player quando atingido pela espada do inimigo * //
@@ -1273,6 +1280,8 @@ public class PlayerController : MonoBehaviour
         audioSource.PlayOneShot(swordDamage[randomSound], 0.2f);
     }
 
+
+    //Usado em estado
     private void PlayerDamageSound()
     {
         // * Reproduz o som do gemido de dor do player * //
@@ -1282,7 +1291,9 @@ public class PlayerController : MonoBehaviour
         int randomSound = UnityEngine.Random.Range(0, hurtSounds.Length);
         audioSource.PlayOneShot(hurtSounds[randomSound], 0.15f);
     }
-    
+
+
+    //Usado em estado
     private void PlayerDeathSound()
     {
         // * Reproduz o som de morte * //
@@ -1292,6 +1303,8 @@ public class PlayerController : MonoBehaviour
         audioSource.PlayOneShot(deathSound, 0.2f);
     }
 
+
+    //Usado em Input
     private void PlayerParrySound()
     {
         // * Reproduz o som do parry * //
@@ -1300,6 +1313,8 @@ public class PlayerController : MonoBehaviour
         audioSource.PlayOneShot(parrySound, 0.5f);
     }
 
+
+    //Usado em estado
     private void PlayerParryBlockSound()
     {
         // * Reproduz o som do contra-ataque após acertar o parry * //
@@ -1308,7 +1323,20 @@ public class PlayerController : MonoBehaviour
         audioSource.PlayOneShot(parryBlockSound, 0.5f);
     }
 
-    //======================================= GAME FEEL METHODS ===========================
+    
+    //Usado em Input e no frame de animação do Gap Closer
+    private void PlayerDashSound()
+    {
+        // * Reproduz o som do Dash * //
+
+
+        //Reproduz o som
+        audioSource.PlayOneShot(dashSound, 0.14f);
+    }
+
+
+
+    //======================================= GAME FEEL ===========================
 
     //HITSTOP
     private IEnumerator HitStop(float duration)
@@ -1342,7 +1370,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    //======================================= HUD METHODS =================================
+    //======================================= HUD =================================
 
     //Converte a vida do player em barra
     private void lifeBarUpdate() 
