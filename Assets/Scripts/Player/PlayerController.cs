@@ -10,12 +10,17 @@ public class PlayerController : MonoBehaviour
 {
     #region VARIÁVEIS
 
+    [Header("Componentes")]
+
     //Componentes do PLAYER
     private Rigidbody2D rb; //Meu RigidBody2D
     [SerializeField] private SpriteRenderer visualRenderer; //Pega a sprite do objeto filho do Player
     [SerializeField] private Animator animator; //Pega o componente Animator do player
+    [SerializeField] private AudioSource audioSource; //Pega a "caixa de som" do player
 
     //============================================================================================
+
+    [Header("GameObjects")]
 
     //Game Objects
     private EnemyFather enemyComum;
@@ -24,13 +29,16 @@ public class PlayerController : MonoBehaviour
 
     //============================================================================================
 
-    //Variáveis de HUD
+    [Header("HUD")]
 
+    //Variáveis de HUD
     [SerializeField] private Image lifeBar; //Imagem da barra de vida
     [SerializeField] private int lifeMax;
 
 
     //============================================================================================
+
+    [Header("Variáveis de controle")]
 
     //Variáveis de controle
     private int life = 10;
@@ -49,6 +57,23 @@ public class PlayerController : MonoBehaviour
     private bool partCreated = false; //Controla se a partícula foi criada
 
     //============================================================================================
+
+    [Header("Áudio e sons")]
+
+    //Variáveis de Áudio
+    [SerializeField] private AudioClip[] swordSounds; //Sons da espada no vázio
+    [SerializeField] private AudioClip[] swordDamage; //Sons de quando o inimigo me acerta com a espada
+    [SerializeField] private AudioClip[] hurtSounds; //Sons do gemido de dor
+    [SerializeField] private AudioClip deathSound; //Som de morte do player
+    [SerializeField] private AudioClip parrySound; //Som do parry
+    [SerializeField] private AudioClip parryBlockSound; //Som do ataque após usar o parry
+
+
+    //============================================================================================
+
+    #region VARIÁVEIS DE ESTADOS
+
+    [Header("Variáveis de estados")]
 
     //Variáveis do LIGHT ATTACK
     private int tapButton = 0; //Quantas vezes o botão de ataque foi pressionado
@@ -114,6 +139,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float gapStopDistance; //Distancia minima para ele parar de perseguir o inimigo e sair do estado
     private Transform enemyTarget; //Guarda quem é o inimigo que foi detectado
+
+    #endregion
 
 
     #endregion
@@ -215,6 +242,10 @@ public class PlayerController : MonoBehaviour
         if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState && !inHurtState)
         {
             animator.SetTrigger("parry");
+
+            //Som
+            PlayerParrySound();
+
             playerState = state.parry;
         }
     }
@@ -707,6 +738,10 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("hurt");
 
+            //Som da espada me acertando e do gemido de dor
+            SwordDamageSound();
+            PlayerDamageSound();
+
             inAnimation = true;
         }
 
@@ -834,6 +869,9 @@ public class PlayerController : MonoBehaviour
         if (!inAnimation)
         {
             animator.SetTrigger("parryBlock");
+
+            //Som
+            PlayerParryBlockSound();
 
             inAnimation = true;
         }
@@ -1046,6 +1084,9 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("die");
 
+            //Som
+            PlayerDeathSound();
+
             inAnimation = true;
         }
 
@@ -1206,6 +1247,67 @@ public class PlayerController : MonoBehaviour
 
 
 
+    //======================================= SOUND METHODS =================================
+
+    private void SwordAirSound()
+    {
+        // * Reproduz o som da espada quando ataca o ar / vázio * //
+
+        if (!isGrounded) return;
+
+
+        //Pego os áudios de forma aleatória
+        int randomSound = UnityEngine.Random.Range(0, swordSounds.Length);
+
+
+        //Reproduz o som
+        audioSource.PlayOneShot(swordSounds[randomSound], 0.3f);
+    }  
+
+    private void SwordDamageSound()
+    {
+        // * Reproduz o som de dano no player quando atingido pela espada do inimigo * //
+
+        //Reproduzo o som
+        int randomSound = UnityEngine.Random.Range(0, swordDamage.Length);
+        audioSource.PlayOneShot(swordDamage[randomSound], 0.2f);
+    }
+
+    private void PlayerDamageSound()
+    {
+        // * Reproduz o som do gemido de dor do player * //
+
+
+        //Reproduzo o som
+        int randomSound = UnityEngine.Random.Range(0, hurtSounds.Length);
+        audioSource.PlayOneShot(hurtSounds[randomSound], 0.15f);
+    }
+    
+    private void PlayerDeathSound()
+    {
+        // * Reproduz o som de morte * //
+
+
+        //Reproduz o som
+        audioSource.PlayOneShot(deathSound, 0.2f);
+    }
+
+    private void PlayerParrySound()
+    {
+        // * Reproduz o som do parry * //
+
+        //Reproduz o som
+        audioSource.PlayOneShot(parrySound, 0.5f);
+    }
+
+    private void PlayerParryBlockSound()
+    {
+        // * Reproduz o som do contra-ataque após acertar o parry * //
+
+        //Reproduz o som
+        audioSource.PlayOneShot(parryBlockSound, 0.5f);
+    }
+
     //======================================= GAME FEEL METHODS ===========================
 
     //HITSTOP
@@ -1253,6 +1355,8 @@ public class PlayerController : MonoBehaviour
 
 
     #endregion
+
+
 
     #region COLISÕES
 
