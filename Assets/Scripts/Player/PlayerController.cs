@@ -1462,6 +1462,24 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+
+        #region VIDA
+
+        //Se eu colidi com a vida
+        if (other.CompareTag("Life"))
+        {
+            //Eu ganho vida SE eu não estiver com a vida cheia
+            if (life >= lifeMax) return;
+
+            life += 2;
+
+            //Destruo a vida
+            Destroy(other.gameObject);
+        }
+
+        #endregion
+
+        #region Enemy / Parry
         //SE não é uma hitbox do inimigo, eu saio
         if (!other.CompareTag("EnemiesHitbox")) return;
 
@@ -1513,7 +1531,7 @@ public class PlayerController : MonoBehaviour
         // Passo a posição X da hitbox que realmente me acertou
         Knockback(other.transform.position.x);
 
-
+        #endregion
     }
 
     #endregion
@@ -1589,10 +1607,6 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region DEBUGS
-
-        UnityEngine.Debug.Log(playerState);
-        UnityEngine.Debug.Log("Chão" + isGrounded);
-        UnityEngine.Debug.Log("Parede" + isTouchWall);
 
         #endregion
     }
