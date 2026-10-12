@@ -20,6 +20,14 @@ public class PlayerController : MonoBehaviour
 
     //============================================================================================
 
+    //Verificação do chão
+    [SerializeField] private Transform checkPosition;
+    [SerializeField] private float checkRadius;
+    [SerializeField] private LayerMask groundLayer;
+
+
+    //============================================================================================
+
     [Header("GameObjects")]
 
     //Game Objects
@@ -55,6 +63,7 @@ public class PlayerController : MonoBehaviour
     private bool isFalling = false; //Controla se estou caindo
     private bool inAnimation = false; //Controla se estou em alguma animação controlada por estado e não Input
     private bool partCreated = false; //Controla se a partícula foi criada
+    private bool isTouchWall = false; //Identifica se estou tocando em alguma parede
 
     //============================================================================================
 
@@ -409,7 +418,7 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("isFall", false);
 
         //SE meu movimento no eixo X for diferente de 0, então vou para o estado de se movendo
-        if (moveInput.x != 0)
+        if (moveInput.x != 0 && !isTouchWall)
         {
             //Indica que estou correndo / em movimento
             animator.SetBool("isRunning", true);
@@ -427,7 +436,7 @@ public class PlayerController : MonoBehaviour
     private void RunState() //Movendo
     {
         //SE meu movimento no eixo X ficar parado, então eu vou para o estado de parado
-        if (moveInput.x == 0 && isGrounded)
+        if (moveInput.x == 0 || isTouchWall)
         {
             //Indica que estou parado
             animator.SetBool("isRunning", false);
@@ -443,14 +452,32 @@ public class PlayerController : MonoBehaviour
 
     private void JumpState() //Pulando
     {
-        //Indica que estou pulando
-        animator.SetBool("isJumping", true);
 
         //Garante que se eu morri, eu vou para estado de morto
         if (life <= 0)
         {
             playerState = state.die;
+            return;
         }
+
+        //Indica que estou pulando
+        animator.SetBool("isJumping", true);
+
+
+
+        //SE já toquei no chão novamente
+        if (isGrounded && rb.linearVelocity.y <= 0.1f)
+        {
+            animator.SetBool("isJumping", false);
+
+            isFalling = false;
+
+            playerState = state.idle;
+
+            return;
+        }
+
+       
     }
 
     private void FallState() //Caindo
@@ -1260,6 +1287,13 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    //Faz a checagem do chão
+    private void GroundCheck()
+    {
+        isGrounded = Physics2D.OverlapCircle(checkPosition.position, checkRadius, groundLayer);
+    }
+
+
 
     //======================================= SONS =================================
 
@@ -1402,8 +1436,14 @@ public class PlayerController : MonoBehaviour
         //SE colidir com o chão, indica que estou no chão
         if (other.gameObject.CompareTag("Ground"))
         {
-            isGrounded = true;
             isFalling = false;
+        }
+
+
+        //Se colidir com a parede, eu reseto minhas váriáveis
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            isTouchWall = true;
         }
 
     }
@@ -1411,9 +1451,11 @@ public class PlayerController : MonoBehaviour
     //Collision EXIT
     private void OnCollisionExit2D(Collision2D other)
     {
-        if (other.gameObject.CompareTag("Ground"))
+
+        //Quando saio da parede
+        if (other.gameObject.CompareTag("Wall"))
         {
-            isGrounded = false;
+            isTouchWall = false;
         }
     }
 
@@ -1508,8 +1550,13 @@ public class PlayerController : MonoBehaviour
     //Em intervalos fixos de tempo Executar lógica relacionada à física.
     private void FixedUpdate()
     {
+        //Faço a checagem do chão
+        GroundCheck();
+
+
         //Atualiza minha movimentação e Sprite 
         UpdateMoves();
+
 
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
         if (!inDash && !inHurtState && !inDieState && !inParryState && !inGapCloserState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
@@ -1544,6 +1591,8 @@ public class PlayerController : MonoBehaviour
         #region DEBUGS
 
         UnityEngine.Debug.Log(playerState);
+        UnityEngine.Debug.Log("Chão" + isGrounded);
+        UnityEngine.Debug.Log("Parede" + isTouchWall);
 
         #endregion
     }
@@ -1551,6 +1600,13 @@ public class PlayerController : MonoBehaviour
     //Draw 
     private void OnDrawGizmosSelected()
     {
+        //Checagem do GapCloser
         Gizmos.DrawWireSphere(transform.position, enemyGapRadius);
+
+        //Checagem do chão
+        if (checkPosition != null)
+        {
+            Gizmos.DrawWireSphere(checkPosition.position, checkRadius);
+        }
     }
 }

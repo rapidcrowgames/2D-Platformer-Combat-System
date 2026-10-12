@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1245387437447359483
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5950586109979615426}
+  m_Layer: 6
+  m_Name: GroundChek
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5950586109979615426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1245387437447359483}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.499, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1928768015492379525}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2040962882070769075
 GameObject:
   m_ObjectHideFlags: 0
@@ -281,6 +312,7 @@ Transform:
   - {fileID: 5894188423898205857}
   - {fileID: 5369822721907426295}
   - {fileID: 2184458035441736632}
+  - {fileID: 5950586109979615426}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &6808151601492307164
@@ -320,7 +352,7 @@ CapsuleCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 9f7c4a90c4b6b6445bf187788305b0da, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -384,6 +416,11 @@ MonoBehaviour:
   visualRenderer: {fileID: 605259107788111084}
   animator: {fileID: 4377071372308750911}
   audioSource: {fileID: 2398771781706136652}
+  checkPosition: {fileID: 5950586109979615426}
+  checkRadius: 0.2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 128
   bloodPart: {fileID: 5275368986746234979, guid: 1a0d9654a788cd24597434f98d628e06, type: 3}
   parryPart: {fileID: 1552300195022412574, guid: 9c3c19e64a3a628479728adb74d7c708, type: 3}
   lifeBar: {fileID: 2502258224820359961}
@@ -393,7 +430,7 @@ MonoBehaviour:
   knockbackForce: 3
   knockbackVel: 7
   gapVel: 7
-  jumpForce: 7
+  jumpForce: 8
   swordSounds:
   - {fileID: 8300000, guid: e08e515fb5f5d46459aa8bec89146a65, type: 3}
   - {fileID: 8300000, guid: 0576de2808e4e3a449d76f1df414a297, type: 3}
@@ -846,7 +883,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5254889671540767117, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
       propertyPath: orthographic size
-      value: 3.38
+      value: 5.18
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
