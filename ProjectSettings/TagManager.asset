@@ -9,6 +9,7 @@ TagManager:
   - PlayerOne
   - Enemy
   - EnemiesHitbox
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -22,7 +23,7 @@ TagManager:
   - EnemyBody
   - EnemyZoneSensor
   - EnemiesHitbox
-  - 
+  - Wall
   - 
   - 
   - 
