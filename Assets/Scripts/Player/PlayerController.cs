@@ -77,6 +77,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioClip parrySound; //Som do parry
     [SerializeField] private AudioClip parryBlockSound; //Som do ataque após usar o parry
     [SerializeField] private AudioClip dashSound; //Som do Dash
+    [SerializeField] private AudioClip lifeSound; //Som do item de vida
 
 
     //============================================================================================
@@ -1321,7 +1322,7 @@ public class PlayerController : MonoBehaviour
 
         //Reproduzo o som
         int randomSound = UnityEngine.Random.Range(0, swordDamage.Length);
-        audioSource.PlayOneShot(swordDamage[randomSound], 0.5f);
+        audioSource.PlayOneShot(swordDamage[randomSound], 0.7f);
     }
 
 
@@ -1333,7 +1334,7 @@ public class PlayerController : MonoBehaviour
 
         //Reproduzo o som
         int randomSound = UnityEngine.Random.Range(0, hurtSounds.Length);
-        audioSource.PlayOneShot(hurtSounds[randomSound], 0.3f);
+        audioSource.PlayOneShot(hurtSounds[randomSound], 0.4f);
     }
 
 
@@ -1354,7 +1355,7 @@ public class PlayerController : MonoBehaviour
         // * Reproduz o som do parry * //
 
         //Reproduz o som
-        audioSource.PlayOneShot(parrySound, 0.5f);
+        audioSource.PlayOneShot(parrySound, 0.8f);
     }
 
 
@@ -1364,7 +1365,7 @@ public class PlayerController : MonoBehaviour
         // * Reproduz o som do contra-ataque após acertar o parry * //
 
         //Reproduz o som
-        audioSource.PlayOneShot(parryBlockSound, 0.7f);
+        audioSource.PlayOneShot(parryBlockSound, 0.8f);
     }
 
     
@@ -1376,6 +1377,15 @@ public class PlayerController : MonoBehaviour
 
         //Reproduz o som
         audioSource.PlayOneShot(dashSound, 0.3f);
+    }
+
+
+    //Usado em colisões
+    private void LifeItemSound()
+    {
+        // * Reproduz o som do item de vida * //
+
+        audioSource.PlayOneShot(lifeSound, 1f);
     }
 
 
@@ -1472,6 +1482,9 @@ public class PlayerController : MonoBehaviour
             if (life >= lifeMax) return;
 
             life += 2;
+
+            //Som
+            LifeItemSound();
 
             //Destruo a vida
             Destroy(other.gameObject);

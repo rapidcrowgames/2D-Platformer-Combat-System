@@ -446,6 +446,7 @@ MonoBehaviour:
   parrySound: {fileID: 8300000, guid: 068b65cab6e003748bdae4e50fb5bcfa, type: 3}
   parryBlockSound: {fileID: 8300000, guid: b511bf37a88e41547bb7cf9a0895fdfd, type: 3}
   dashSound: {fileID: 8300000, guid: 0058ec3dbe9d6f84abba8f8a049ba598, type: 3}
+  lifeSound: {fileID: 8300000, guid: 2dfedca98fec94640a1339dd426bc7cc, type: 3}
   hitbox: {fileID: 5938790610190415077, guid: d99d5213b288325418599eba8384e7d0, type: 3}
   hitboxPositionDir: {fileID: 8354152199551598025}
   hitboxPositionEsq: {fileID: 5894188423898205857}
@@ -883,18 +884,50 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5254889671540767117, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
       propertyPath: orthographic size
-      value: 5.18
+      value: 5.625
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5593638601942963083, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3783719380078752775}
   m_SourcePrefab: {fileID: 100100000, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
 --- !u!20 &662054896393185622 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 5254889671540767117, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
   m_PrefabInstance: {fileID: 4745959731986469083}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &900035578972963664 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5593638601942963083, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
+  m_PrefabInstance: {fileID: 4745959731986469083}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3783719380078752775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900035578972963664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.2D.Runtime::UnityEngine.Rendering.Universal.PixelPerfectCamera
+  m_ComponentVersion: 1
+  m_AssetsPPU: 16
+  m_RefResolutionX: 300
+  m_RefResolutionY: 167
+  m_CropFrame: 0
+  m_GridSnapping: 0
+  m_FilterMode: 0
+  m_UpscaleRT: 0
+  m_PixelSnapping: 0
+  m_CropFrameX: 0
+  m_CropFrameY: 0
+  m_StretchFill: 0
 --- !u!4 &5369822721907426295 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 817535735493137196, guid: 3c4afeda23bfa9a4f9419efdffae7945, type: 3}
