@@ -48,7 +48,7 @@ MonoBehaviour:
   m_LightType: 3
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 1
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.4245283, g: 0, b: 0, a: 1}
   m_Intensity: 23.73
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
@@ -73,7 +73,7 @@ MonoBehaviour:
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 0.27
+  m_PointLightOuterRadius: 0.17
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -111,7 +111,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 30.559, y: -39.37, z: -0.12}
-  m_LocalScale: {x: 0.064093836, y: 0.064093836, z: 0.064093836}
+  m_LocalScale: {x: 0.07462313, y: 0.07462313, z: 0.07462313}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5298454095493430153}
@@ -167,7 +167,7 @@ SpriteRenderer:
   m_SortingOrder: 100
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.5754717, g: 0.078720205, b: 0.078720205, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
