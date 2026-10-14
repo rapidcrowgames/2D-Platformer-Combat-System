@@ -1621,6 +1621,8 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
+        UnityEngine.Debug.Log(isGrounded);
+
         #endregion
     }
 

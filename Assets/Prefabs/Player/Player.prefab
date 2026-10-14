@@ -430,7 +430,7 @@ MonoBehaviour:
   knockbackForce: 3
   knockbackVel: 7
   gapVel: 7
-  jumpForce: 8
+  jumpForce: 8.5
   swordSounds:
   - {fileID: 8300000, guid: e08e515fb5f5d46459aa8bec89146a65, type: 3}
   - {fileID: 8300000, guid: 0576de2808e4e3a449d76f1df414a297, type: 3}
