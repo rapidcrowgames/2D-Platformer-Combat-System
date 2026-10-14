@@ -42,6 +42,8 @@ public class PlayerController : MonoBehaviour
     //Variáveis de HUD
     [SerializeField] private Image lifeBar; //Imagem da barra de vida
     [SerializeField] private int lifeMax;
+    [SerializeField] private GameObject enemyFoundIcon; //Icone de inimigo selecionado para o Gap closer
+    private GameObject enemyFoundIconInst; //Instância do ícone
 
 
     //============================================================================================
@@ -267,70 +269,24 @@ public class PlayerController : MonoBehaviour
     //Gap closer
     private void OnGap(InputValue value)
     {
-
-        //SE segurei a tecla
-        if (value.isPressed && !inDieState && !inDash && !inHurtState && !inHeavyAttack && !isFalling)
+        //SE apertei a tecla e existe um inimigo selecionado
+        if (value.isPressed &&
+            enemyTarget != null &&
+            !inDieState &&
+            !inDash &&
+            !inHurtState &&
+            !inHeavyAttack &&
+            !isFalling)
         {
+            animator.SetTrigger("enterGap");
 
-            //Faço a verificação de alguém próximo
-            Collider2D[] enemyDetected = Physics2D.OverlapCircleAll(transform.position, enemyGapRadius, enemyLayer);
-
-
-            // Inimigo escolhido
-            EnemyFather closestEnemy = null;
-
-            // Começa com distância infinita
-            float closestDistance = Mathf.Infinity;
-
-
-            // Passo por todos os inimigos encontrados
-            foreach (Collider2D enemyCollider in enemyDetected)
+            //Escondo o ícone quando começo o Gap
+            if (enemyFoundIconInst != null)
             {
-                EnemyFather enemy =
-                    enemyCollider.GetComponentInParent<EnemyFather>();
-
-                // Se não existe ou está morto, ignoro
-                if (enemy == null || !enemy.IsAlive())
-                {
-                    continue;
-                }
-
-
-                // Descubro onde ele está em relação ao Player
-                float enemyDistanceX =
-                    enemy.transform.position.x - transform.position.x;
-
-
-                // Verifico se ele está na minha frente
-                if (enemyDistanceX * direction <= 0)
-                {
-                    continue;
-                }
-
-
-                // Pego a distância sem negativo
-                float distance =
-                    Mathf.Abs(enemyDistanceX);
-
-
-                // Se esse inimigo for mais próximo que o anterior
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestEnemy = enemy;
-                }
+                enemyFoundIconInst.SetActive(false);
             }
 
-
-            // Se encontrei algum inimigo válido
-            if (closestEnemy != null)
-            {
-                animator.SetTrigger("enterGap");
-
-                enemyTarget = closestEnemy.transform;
-
-                playerState = state.gapCloser;
-            }
+            playerState = state.gapCloser;
         }
     }
 
@@ -1287,11 +1243,98 @@ public class PlayerController : MonoBehaviour
         parryWindowTimer = Mathf.Clamp(parryWindowTimer, 0f, parryWindowFixedTimer);
     }
 
-
     //Faz a checagem do chão
     private void GroundCheck()
     {
         isGrounded = Physics2D.OverlapCircle(checkPosition.position, checkRadius, groundLayer);
+    }
+
+    //Verifica se existe algum inimigo disponível para usar o Gap Closer
+    private void CheckGapEnemy()
+    {
+        //Faço a verificação de inimigos próximos
+        Collider2D[] enemyDetected =
+            Physics2D.OverlapCircleAll(transform.position, enemyGapRadius, enemyLayer);
+
+
+        //Inimigo escolhido
+        EnemyFather closestEnemy = null;
+
+        //Começa com distância infinita
+        float closestDistance = Mathf.Infinity;
+
+
+        //Passo por todos os inimigos encontrados
+        foreach (Collider2D enemyCollider in enemyDetected)
+        {
+            EnemyFather enemy =
+                enemyCollider.GetComponentInParent<EnemyFather>();
+
+            //Se não existe ou está morto, ignoro
+            if (enemy == null || !enemy.IsAlive())
+            {
+                continue;
+            }
+
+
+            //Descubro onde ele está em relação ao Player
+            float enemyDistanceX =
+                enemy.transform.position.x - transform.position.x;
+
+
+            //Verifico se ele está na minha frente
+            if (enemyDistanceX * direction <= 0)
+            {
+                continue;
+            }
+
+
+            //Pego a distância sem negativo
+            float distance = Mathf.Abs(enemyDistanceX);
+
+
+            //Se esse inimigo for mais próximo que o anterior
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestEnemy = enemy;
+            }
+        }
+
+
+        //Se encontrei algum inimigo válido
+        if (closestEnemy != null)
+        {
+            enemyTarget = closestEnemy.transform;
+
+
+            //Se ainda não criei o ícone, eu crio
+            if (enemyFoundIconInst == null)
+            {
+                enemyFoundIconInst = Instantiate(enemyFoundIcon);
+            }
+
+
+            //Ativo o ícone
+            enemyFoundIconInst.SetActive(true);
+
+
+            //Coloco o ícone acima do inimigo encontrado
+            enemyFoundIconInst.transform.position =
+                enemyTarget.position + new Vector3(0f, 0f, 0f);
+        }
+
+        //Se não existe nenhum inimigo válido
+        else
+        {
+            enemyTarget = null;
+
+            //Escondo o ícone
+            if (enemyFoundIconInst != null)
+            {
+                enemyFoundIconInst.SetActive(false);
+            }
+        }
     }
 
 
@@ -1587,6 +1630,10 @@ public class PlayerController : MonoBehaviour
 
         //Atualiza minha movimentação e Sprite 
         UpdateMoves();
+
+
+        //Procura inimigo próximo para o gap closer
+        CheckGapEnemy();
 
 
         //Aplicando ao meu Rb (movimento) SE não estou em DASH

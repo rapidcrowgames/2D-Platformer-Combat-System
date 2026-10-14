@@ -425,6 +425,7 @@ MonoBehaviour:
   parryPart: {fileID: 1552300195022412574, guid: 9c3c19e64a3a628479728adb74d7c708, type: 3}
   lifeBar: {fileID: 2502258224820359961}
   lifeMax: 10
+  enemyFoundIcon: {fileID: 980102455155592958, guid: 6f67ff7d7e94e5a478374f0f2972761e, type: 3}
   normalVel: 5
   slowVel: 1.3
   knockbackForce: 3
