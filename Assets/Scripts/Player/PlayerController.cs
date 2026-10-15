@@ -66,6 +66,7 @@ public class PlayerController : MonoBehaviour
     private bool inAnimation = false; //Controla se estou em alguma animação controlada por estado e não Input
     private bool partCreated = false; //Controla se a partícula foi criada
     private bool isTouchWall = false; //Identifica se estou tocando em alguma parede
+    private bool inCutscene = false; //Identifica se estou em cutscene
 
     //============================================================================================
 
@@ -1109,7 +1110,7 @@ public class PlayerController : MonoBehaviour
     //Atualiza meus movimentos e sprite no FixedUpdate
     private void UpdateMoves()
     {
-        if (inDash || inDieState || inHurtState || inParryState || inGapCloserState) return;
+        if (inDash || inDieState || inHurtState || inParryState || inGapCloserState || inCutscene) return;
 
         //SE estiver indo para esquerda, eu viro para esquerda a SPRITE
         if (moveInput.x < 0)
@@ -1335,6 +1336,24 @@ public class PlayerController : MonoBehaviour
                 enemyFoundIconInst.SetActive(false);
             }
         }
+    }
+
+
+    //Pega a variável inCutscene
+    public void InCutsceneVariable(bool choose)
+    {
+        inCutscene = choose;
+    }
+
+    //Método se estou em CUTSCENE ele para o player e não faz nada
+    private void CutsceneControll()
+    {
+        if (!inCutscene) return;
+
+        //Vou para o estado de idle e paro o personagem primeiro
+        if (rb.linearVelocity.x != 0) new Vector2(0f, rb.linearVelocity.y);
+
+        playerState = state.idle;
     }
 
 
@@ -1636,8 +1655,16 @@ public class PlayerController : MonoBehaviour
         CheckGapEnemy();
 
 
+        //Controla quando estou em estado de Cutscene
+        CutsceneControll();
+
+
         //Aplicando ao meu Rb (movimento) SE não estou em DASH
-        if (!inDash && !inHurtState && !inDieState && !inParryState && !inGapCloserState) rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        if (!inDash && !inHurtState && !inDieState && !inParryState && !inGapCloserState
+            && !inCutscene)
+        {
+            rb.linearVelocity = new Vector2(moveInput.x * vel, rb.linearVelocity.y);
+        }
     }
 
     // Update is called once per frame
@@ -1668,7 +1695,7 @@ public class PlayerController : MonoBehaviour
 
         #region DEBUGS
 
-        UnityEngine.Debug.Log(isGrounded);
+        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }
