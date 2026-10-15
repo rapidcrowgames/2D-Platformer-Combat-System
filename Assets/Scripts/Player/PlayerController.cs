@@ -3,6 +3,7 @@ using System.Diagnostics;
 using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
@@ -1059,7 +1060,7 @@ public class PlayerController : MonoBehaviour
                 playerState = state.idle;
             }
         }
-    }
+    } //Ataque após o gap // Attack after gap
 
     private void DieState()
     {
@@ -1096,10 +1097,11 @@ public class PlayerController : MonoBehaviour
         {
             if (animState.normalizedTime >= 1f)
             {
-                Destroy(gameObject, 1f);
+                //Restart
+                SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex));
             }
         }
-    }
+    } //Morto / Die
 
 
 
@@ -1694,8 +1696,6 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region DEBUGS
-
-        UnityEngine.Debug.Log(playerState);
 
         #endregion
     }

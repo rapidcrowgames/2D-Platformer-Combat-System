@@ -23,15 +23,6 @@ public class CutsceneTrigger : MonoBehaviour
 
         started = true;
 
-        //Pego o input do player
-        PlayerInput playerInput = GetComponentInParent<PlayerInput>();
-
-        //SE o player input existe, então eu desabilito ele por enquanto
-        if (playerInput != null)
-        {
-            playerInput.enabled = false;
-        }
-
         player.InCutsceneVariable(true);
 
         //Inicio a cutscene
