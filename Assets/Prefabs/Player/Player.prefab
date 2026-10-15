@@ -454,7 +454,7 @@ MonoBehaviour:
   dashVel: 25
   timerDashDuration: 0.3
   parryWindowFixedTimer: 0.2
-  enemyGapRadius: 5
+  enemyGapRadius: 6.5
   enemyLayer:
     serializedVersion: 2
     m_Bits: 512
@@ -508,7 +508,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 125
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
