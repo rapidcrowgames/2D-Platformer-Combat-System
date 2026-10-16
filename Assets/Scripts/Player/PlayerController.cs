@@ -256,7 +256,7 @@ public class PlayerController : MonoBehaviour
     private void OnParry(InputValue value)
     {
         //SE eu apertar o botão & Não estiver caindo, correndo, pulando, atacando
-        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState && !inHurtState)
+        if (value.isPressed && isGrounded && !isFalling && !inDash && !inHeavyAttack && !inLightAttack && !inDieState && !inHurtState && !inParryState && !inParryBlockState)
         {
             animator.SetTrigger("parry");
 
