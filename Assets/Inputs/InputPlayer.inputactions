@@ -125,6 +125,16 @@
                     "interactions": "Hold(duration=0.3)",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "Restart",
+                    "type": "Button",
+                    "id": "c2dff25b-ee5b-4d6f-ad1c-10fba971036b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -620,6 +630,28 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Gap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5ec42053-ef17-4ab4-a0af-2c2d1da28ecb",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Restart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a6630e2f-4bb2-4696-a9ec-2f1020ad0214",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Restart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -278,6 +278,7 @@ public class PlayerController : MonoBehaviour
             !inDash &&
             !inHurtState &&
             !inHeavyAttack &&
+            isGrounded &&
             !isFalling)
         {
             animator.SetTrigger("enterGap");
@@ -289,6 +290,15 @@ public class PlayerController : MonoBehaviour
             }
 
             playerState = state.gapCloser;
+        }
+    }
+
+    //Restart level
+    private void OnRestart(InputValue value)
+    {
+        if (value.isPressed && !inDieState && !inCutscene && life > 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
