@@ -60,6 +60,17 @@ I built a **state-based architecture** and iteratively refined its transitions, 
 
 This project strengthened my experience with **gameplay state management, combat timing, Unity Animator, physics checks, input handling, and game feel**.
 
+
+## 🎮 Download & Play
+
+Experience the combat mechanics and explore all three playable levels!
+
+**Platform:** Windows
+
+[▶ Download Combat System on itch.io](https://rapid-crow-games.itch.io/combat-system-2d-action-platformer-prototype)
+
+
+
 ## Portfolio
 
 [See more of my work](https://richardportfolio-app.base44.app/)
